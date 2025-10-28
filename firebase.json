@@ -1,0 +1,21 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "conectus-b4afd",
+                    "appId": "1:219340793825:android:b7fb3f8f38813a6cf994a0",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "conectus-b4afd",
+                    "configurations": {
+                        "android": "1:219340793825:android:b7fb3f8f38813a6cf994a0"
+                    }
+                }
+            }
+        }
+    }
+}

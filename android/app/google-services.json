@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "219340793825",
+    "firebase_url": "https://conectus-b4afd-default-rtdb.firebaseio.com",
+    "project_id": "conectus-b4afd",
+    "storage_bucket": "conectus-b4afd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:219340793825:android:b7fb3f8f38813a6cf994a0",
+        "android_client_info": {
+          "package_name": "com.henrilima.connectus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMdkSatj7u5Ztt2wto80Z4PKVbNRyef-k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
