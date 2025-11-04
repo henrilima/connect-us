@@ -30,7 +30,6 @@ class _HomeScreenState extends State<HomeScreen> {
     relationshipData!['relationshipDate'],
   );
   late Map<String, int> relationshipDate = getDifferenceDate(
-    DateTime.now(),
     DateTime(userDate.year, userDate.month, userDate.day),
   );
 
@@ -45,7 +44,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         relationshipDate = getDifferenceDate(
-          DateTime.now(),
           DateTime(userDate.year, userDate.month, userDate.day),
         );
       });
