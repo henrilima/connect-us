@@ -38,11 +38,12 @@ class _SpotifyScreenState extends State<SpotifyScreen> {
     );
   }
 
-  savePartnerMusic(String link, String note) async {
+  savePartnerMusic(String link, String note, {bool delete = false}) async {
     await DatabaseService().updatePartnerMusic(
       widget.userData['partnerId'],
       link,
       note,
+      delete: delete
     );
 
     if (!mounted) return;

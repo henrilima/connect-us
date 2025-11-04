@@ -1,9 +1,10 @@
 import 'package:connect/services/database_service.dart';
 import 'package:connect/theme/app_color.dart';
+import 'package:connect/utils/dialoguer.dart';
 import 'package:flutter/material.dart';
 
 class SpotifyForm extends StatefulWidget {
-  final void Function(String, String) onSubmit;
+  final void Function(String, String, {bool delete}) onSubmit;
   final String partnerId;
   const SpotifyForm(this.onSubmit, this.partnerId, {super.key});
 
@@ -14,10 +15,46 @@ class SpotifyForm extends StatefulWidget {
 class _SpotifyFormState extends State<SpotifyForm> {
   final _linkController = TextEditingController();
   final _noteController = TextEditingController();
+  Map<String, dynamic>? _data;
 
-  void _submitForm() {
+  void _submitForm({bool delete = false}) async {
     if (_linkController.text.isEmpty) return;
-    widget.onSubmit(_linkController.text, _noteController.text);
+    if (delete) {
+      final confirm = await Dialoguer.showConfirmAlert(
+        context: context,
+        titleWidget: Text("Opa"),
+        contentWidget: Text(
+          "Tem certeza que deseja remover a música dedicada?",
+        ),
+        actionsWidget: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: AppColors.errorColor),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Remover'),
+          ),
+        ],
+      );
+
+      if (confirm == true) {
+        widget.onSubmit(
+          _linkController.text,
+          _noteController.text,
+          delete: true,
+        );
+      } else {
+        return;
+      }
+    } else {
+      widget.onSubmit(
+        _linkController.text,
+        _noteController.text,
+        delete: false,
+      );
+    }
   }
 
   @override
@@ -28,11 +65,14 @@ class _SpotifyFormState extends State<SpotifyForm> {
 
   _tryGetPartnerData() async {
     final data = await DatabaseService().getPartnerMusic(widget.partnerId);
+
     if (data.isNotEmpty) {
       setState(() {
-        _linkController.text = data['url'] as String;
-        _noteController.text = data['note'] as String;
+        _data = data;
       });
+
+      _linkController.text = data['url'] as String;
+      _noteController.text = data['note'] as String;
     }
   }
 
@@ -76,8 +116,22 @@ class _SpotifyFormState extends State<SpotifyForm> {
             ),
             SizedBox(height: 24),
             Row(
+              spacing: 12,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
+                if (_data != null)
+                  ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all(
+                        AppColors.errorColor,
+                      ),
+                    ),
+                    onPressed: () => _submitForm(delete: true),
+                    child: Text(
+                      "Remover dedicação",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
                 ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: WidgetStateProperty.all(
@@ -85,10 +139,7 @@ class _SpotifyFormState extends State<SpotifyForm> {
                     ),
                   ),
                   onPressed: () => _submitForm(),
-                  child: Text(
-                    "Salvar mudanças",
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: Text("Dedicar", style: TextStyle(color: Colors.white)),
                 ),
               ],
             ),
