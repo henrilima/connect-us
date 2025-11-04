@@ -4,6 +4,7 @@ import 'package:connect/theme/app_color.dart';
 import 'package:connect/utils/dialoguer.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 
 class TimelineCard extends StatefulWidget {
   final String title;
@@ -26,26 +27,6 @@ class TimelineCard extends StatefulWidget {
 }
 
 class _TimelineCardState extends State<TimelineCard> {
-  String _monthName(int month) {
-    const months = [
-      '',
-      'Janeiro',
-      'Fevereiro',
-      'Março',
-      'Abril',
-      'Maio',
-      'Junho',
-      'Julho',
-      'Agosto',
-      'Setembro',
-      'Outubro',
-      'Novembro',
-      'Dezembro',
-    ];
-    if (month >= 1 && month <= 12) return months[month];
-    return '';
-  }
-
   _editEvent() {
     return Dialoguer.openModalBottomSheet(
       context: context,
@@ -116,7 +97,9 @@ class _TimelineCardState extends State<TimelineCard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${dateTime.day} de ${_monthName(dateTime.month)} de ${dateTime.year}',
+                              DateFormat(
+                                "dd 'de' MMMM 'de' y",
+                              ).format(dateTime),
                               style: const TextStyle(
                                 fontSize: 12,
                                 height: 1,
