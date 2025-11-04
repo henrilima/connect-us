@@ -6,6 +6,7 @@ import 'package:connect/widgets/error_screen.dart';
 import 'package:connect/widgets/loading_screen.dart';
 import 'package:connect/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class ChatScreen extends StatefulWidget {
   final Function setPage;
@@ -73,7 +74,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
                           return MessageComponent(
                             el['message'],
-                            '${date.day}/${date.month}/${date.year} às ${date.hour}:${date.minute}',
+                            DateFormat("dd/MM/y 'às' hh:mm").format(date),
                             alignment: getAlignment(el['author']),
                           );
                         }),
