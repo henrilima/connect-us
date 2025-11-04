@@ -4,6 +4,7 @@ import 'package:connect/forms/spotify_form.dart';
 import 'package:connect/services/database_service.dart';
 import 'package:connect/services/spotify_service.dart';
 import 'package:connect/theme/app_color.dart';
+import 'package:connect/utils/dialoguer.dart';
 import 'package:connect/widgets/error_screen.dart';
 import 'package:connect/widgets/spotify_card.dart';
 import 'package:flutter/material.dart';
@@ -35,23 +36,9 @@ class _SpotifyScreenState extends State<SpotifyScreen> {
 
   _openSpotifyFormModal(BuildContext context) {
     final partnerId = widget.userData['partnerId'];
-
-    showModalBottomSheet(
+    Dialoguer.openModalBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: SpotifyForm(_setMusic, partnerId),
-            ),
-          ),
-        );
-      },
+      form: SpotifyForm(_setMusic, partnerId),
     );
   }
 
