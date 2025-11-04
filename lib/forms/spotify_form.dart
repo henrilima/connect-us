@@ -22,9 +22,9 @@ class _SpotifyFormState extends State<SpotifyForm> {
     if (delete) {
       final confirm = await Dialoguer.showConfirmAlert(
         context: context,
-        titleWidget: Text("Opa"),
+        titleWidget: Text("Espere!"),
         contentWidget: Text(
-          "Tem certeza que deseja remover a música dedicada?",
+          "Você tem certeza de que deseja remover a música dedicada?",
         ),
         actionsWidget: [
           TextButton(
