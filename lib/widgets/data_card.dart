@@ -1,6 +1,7 @@
 import 'package:connect/theme/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 
 class DataCard extends StatelessWidget {
   final String text;
@@ -10,6 +11,7 @@ class DataCard extends StatelessWidget {
   final int type;
   final Function execPlus;
   final Function execMinus;
+  final String lastUpdate;
 
   const DataCard({
     required this.text,
@@ -18,6 +20,7 @@ class DataCard extends StatelessWidget {
     required this.icon,
     required this.execPlus,
     required this.execMinus,
+    this.lastUpdate = '',
     this.type = 0,
     super.key,
   });
@@ -92,6 +95,15 @@ class DataCard extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
+              if (lastUpdate.isNotEmpty)
+                Text(
+                  DateFormat('dd MMM y').format(DateTime.parse(lastUpdate)),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: textColor.withAlpha(50),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               SizedBox(height: 16),
               Row(
                 spacing: 16,
