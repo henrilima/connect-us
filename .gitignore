@@ -22,7 +22,7 @@ lib/firebase_options.dart
 *.log
 
 # Credentials
-lib/spotify_credentials.dart
+lib/credentials.dart
 
 # IntelliJ related
 *.iml

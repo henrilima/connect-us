@@ -1,7 +1,9 @@
+import 'package:connect/credentials.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+/// Classe responsável por armazenar o ID do usuário de maneira segura na aplicação.
 class Storage {
-  static const String _userIdKey = '96273733';
+  static final String _userIdKey = Credentials.storageKey;
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static final Storage _instance = Storage._internal();

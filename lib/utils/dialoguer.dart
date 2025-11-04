@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+/// Classe Dialoguer, feita para exibir diálogos simples ou customizados.
 class Dialoguer {
   static void showSimpleAlert({
     required BuildContext context,
@@ -14,7 +15,7 @@ class Dialoguer {
         return AlertDialog(
           title: Text(title),
           content: Text(content),
-          actions: <Widget>[
+          actions: [
             TextButton(
               child: Text(buttonText),
               onPressed: () {
@@ -40,7 +41,7 @@ class Dialoguer {
         return AlertDialog(
           title: titleWidget,
           content: contentWidget,
-          actions: <Widget>[
+          actions: [
             TextButton(
               child: Text(buttonText),
               onPressed: () {

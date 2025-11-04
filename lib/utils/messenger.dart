@@ -1,6 +1,12 @@
 import 'package:connect/theme/app_color.dart';
 import 'package:flutter/material.dart';
 
+/// Classe responsável por gerenciar todas os tipos de avisos da aplicação, sejam eles erros, mensagens de sucesso, alertas, informações e outros.
+///
+/// [context] define onde o aviso será exibido.
+/// [text] é a mensagem mostrada.
+/// [type] indica o tipo do aviso.
+/// [duration] define o tempo na tela (padrão: 5 segundos).
 class AppMessenger {
   final String text;
   final String type;
