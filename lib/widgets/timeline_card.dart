@@ -58,32 +58,26 @@ class _TimelineCardState extends State<TimelineCard> {
   }
 
   Future<void> _confirmDelete() async {
-    final bool? confirmar = await showDialog<bool>(
+    final bool confirm = await Dialoguer.showConfirmAlert(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirmar exclusão'),
-          content: const Text(
-            'Tem certeza de que deseja deletar este evento da Linha do Tempo? Esta ação não pode ser desfeita.',
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.errorColor,
-              ),
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Deletar'),
-            ),
-          ],
-        );
-      },
+      titleWidget: const Text('Confirmar exclusão'),
+      contentWidget: const Text(
+        'Tem certeza de que deseja deletar este evento da Linha do Tempo? Esta ação não pode ser desfeita.',
+      ),
+      actionsWidget: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancelar'),
+        ),
+        TextButton(
+          style: TextButton.styleFrom(foregroundColor: AppColors.errorColor),
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Deletar'),
+        ),
+      ],
     );
 
-    if (confirmar == true) {
+    if (confirm == true) {
       DatabaseService().deleteEventFromTimeline(
         relationshipId: widget.userData['relationshipId'],
         eventkey: widget.eventKey,
