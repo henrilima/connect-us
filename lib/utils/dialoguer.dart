@@ -54,6 +54,25 @@ class Dialoguer {
     );
   }
 
+  static void showConfirmAlert({
+    required BuildContext context,
+    required Widget titleWidget,
+    required Widget contentWidget,
+    required List<Widget> actionsWidget,
+    String buttonText = 'OK',
+  }) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: titleWidget,
+          content: contentWidget,
+          actions: actionsWidget,
+        );
+      },
+    );
+  }
+
   static void openModalBottomSheet({
     required BuildContext context,
     required Widget form,
