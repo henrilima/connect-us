@@ -21,6 +21,9 @@ lib/firebase_options.dart
 *.firebase/
 *.log
 
+# Credentials
+lib/spotify_credentials.dart
+
 # IntelliJ related
 *.iml
 *.ipr
