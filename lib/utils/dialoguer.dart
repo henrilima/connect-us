@@ -54,14 +54,14 @@ class Dialoguer {
     );
   }
 
-  static void showConfirmAlert({
+  static Future<bool> showConfirmAlert({
     required BuildContext context,
     required Widget titleWidget,
     required Widget contentWidget,
     required List<Widget> actionsWidget,
     String buttonText = 'OK',
-  }) {
-    showDialog(
+  }) async {
+    final bool confirm = await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -71,6 +71,8 @@ class Dialoguer {
         );
       },
     );
+
+    return confirm;
   }
 
   static void openModalBottomSheet({
