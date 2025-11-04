@@ -66,6 +66,7 @@ class _CountersScreenState extends State<CountersScreen> {
                             "Total de abraços trocados desde que se conheceram.",
                         icon: FontAwesomeIcons.handshake,
                         type: 1,
+                        lastUpdate: counters['hugCountTime'] ?? '',
                         execPlus: () => DatabaseService().manageHugsCount(
                           relationshipId,
                           increment: true,
@@ -82,6 +83,7 @@ class _CountersScreenState extends State<CountersScreen> {
                             "Número de beijos compartilhados até agora.",
                         icon: FontAwesomeIcons.faceKiss,
                         type: 2,
+                        lastUpdate: counters['kissCountTime'] ?? '',
                         execPlus: () => DatabaseService().manageKissesCount(
                           relationshipId,
                           increment: true,
