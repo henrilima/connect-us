@@ -97,10 +97,10 @@ class DataCard extends StatelessWidget {
               ),
               if (lastUpdate.isNotEmpty)
                 Text(
-                  DateFormat('dd MMM y').format(DateTime.parse(lastUpdate)),
+                  'Última atualização em: ${DateFormat("dd 'de' MMMM 'às' HH:mm").format(DateTime.parse(lastUpdate))}',
                   style: TextStyle(
                     fontSize: 12,
-                    color: textColor.withAlpha(50),
+                    color: textColor.withAlpha(100),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
