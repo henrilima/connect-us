@@ -200,6 +200,9 @@ class DatabaseService {
 
     if ((currentValue + op) < 0) return;
     await relationshipNodeRef.set(ServerValue.increment(increment ? 1 : -1));
+    await dbRef
+        .child('relationships/$relationshipId/counters/hugCountTime')
+        .set(DateTime.now().toIso8601String());
   }
 
   Future<void> manageKissesCount(
@@ -216,6 +219,9 @@ class DatabaseService {
 
     if ((currentValue + op) < 0) return;
     await relationshipNodeRef.set(ServerValue.increment(increment ? 1 : -1));
+    await dbRef
+        .child('relationships/$relationshipId/counters/kissCountTime')
+        .set(DateTime.now().toIso8601String());
   }
 
   Future<void> addEventFromTimeline({
