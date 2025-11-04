@@ -1,4 +1,4 @@
-import 'package:connect/spotify_credentials.dart';
+import 'package:connect/credentials.dart';
 import 'package:spotify/spotify.dart';
 
 class SpotifyService {
