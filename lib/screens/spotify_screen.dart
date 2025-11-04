@@ -5,7 +5,6 @@ import 'package:connect/services/database_service.dart';
 import 'package:connect/services/spotify_service.dart';
 import 'package:connect/theme/app_color.dart';
 import 'package:connect/utils/dialoguer.dart';
-import 'package:connect/widgets/error_screen.dart';
 import 'package:connect/widgets/spotify_card.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -21,16 +20,13 @@ class SpotifyScreen extends StatefulWidget {
 
 class _SpotifyScreenState extends State<SpotifyScreen> {
   Map<String, dynamic>? _trackData;
-  String? _lastUrl;
-  bool _loading = false;
+  String? _currentFetchedUrl;
 
-  Future<void> _loadDemoTrack(String url) async {
-    setState(() => _loading = true);
+  Future<void> _fetchTrackData(String url) async {
     final data = await SpotifyService().getTrackDataFromUrl(url);
-    if (!mounted) return;
+
     setState(() {
       _trackData = data;
-      _loading = false;
     });
   }
 
@@ -38,11 +34,11 @@ class _SpotifyScreenState extends State<SpotifyScreen> {
     final partnerId = widget.userData['partnerId'];
     Dialoguer.openModalBottomSheet(
       context: context,
-      form: SpotifyForm(_setMusic, partnerId),
+      form: SpotifyForm(savePartnerMusic, partnerId),
     );
   }
 
-  _setMusic(String link, String note) async {
+  savePartnerMusic(String link, String note) async {
     await DatabaseService().updatePartnerMusic(
       widget.userData['partnerId'],
       link,
@@ -54,84 +50,126 @@ class _SpotifyScreenState extends State<SpotifyScreen> {
   }
 
   @override
+  void didUpdateWidget(covariant SpotifyScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final oldUrl = oldWidget.userData['url'];
+    final newUrl = widget.userData['url'];
+
+    if (oldUrl != newUrl && newUrl != null && newUrl.isNotEmpty) {
+      _fetchTrackData(newUrl);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: DatabaseService().streamPartnerMusic(widget.userData['userId']),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(
-            appBar: AppBarComponent(
-              'Música Dedicada',
-              actions: [
-                IconButton(
-                  onPressed: () => _openSpotifyFormModal(context),
-                  icon: const FaIcon(FontAwesomeIcons.link, size: 20),
-                ),
-              ],
-            ),
-            drawer: DrawerComponent(widget.setPage),
-            body: Center(child: CircularProgressIndicator()),
+          return SpotifyContentScreen(
+            openSpotifyFormModal: _openSpotifyFormModal,
+            setPage: widget.setPage,
+            bodyWidget: Center(child: CircularProgressIndicator()),
           );
         }
 
         final data = snapshot.data;
-        if (data == null) {
-          return ErrorScreenComponent("Nenhuma música encontrada");
+
+        if (data == null || data.isEmpty) {
+          final bodyWidget = Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: const [
+                Text(
+                  "Parece que seu par ainda não dedicou uma música para você (ou inseriu um link inválido). Dedique um som clicando no ícone de link.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          );
+
+          return SpotifyContentScreen(
+            openSpotifyFormModal: _openSpotifyFormModal,
+            setPage: widget.setPage,
+            bodyWidget: bodyWidget,
+          );
         }
 
         final url = data['url'];
-        final note = data['note'];
-
-        if (url != null && url.isNotEmpty && url != _lastUrl) {
-          _lastUrl = url;
-
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _loadDemoTrack(url);
-          });
+        if (url != null && url.isNotEmpty && _currentFetchedUrl != url) {
+          _currentFetchedUrl = url;
+          _trackData = null;
+          _fetchTrackData(url);
         }
 
-        return Scaffold(
-          appBar: AppBarComponent(
-            'Música Dedicada',
-            actions: [
-              IconButton(
-                onPressed: () => _openSpotifyFormModal(context),
-                icon: const FaIcon(FontAwesomeIcons.link, size: 20),
-              ),
-            ],
-          ),
-          drawer: DrawerComponent(widget.setPage),
-          body: Center(
-            child: _loading
-                ? Center(child: CircularProgressIndicator())
-                : _trackData != null
-                ? HasMusic(_trackData, note: note)
-                : Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: const [
-                        Text(
-                          "Parece que seu par ainda não dedicou uma música para você (ou inseriu um link inválido). Dedique um som clicando no ícone de link.",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-          ),
+        if (_trackData == null) {
+          return SpotifyContentScreen(
+            openSpotifyFormModal: _openSpotifyFormModal,
+            setPage: widget.setPage,
+            bodyWidget: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        return SpotifyContentScreen(
+          note: data['note'],
+          setPage: widget.setPage,
+          trackData: _trackData,
+          openSpotifyFormModal: _openSpotifyFormModal,
         );
       },
     );
   }
 }
 
+class SpotifyContentScreen extends StatelessWidget {
+  final Function(BuildContext) openSpotifyFormModal;
+  final Function setPage;
+  final Widget? bodyWidget;
+
+  final Map<String, dynamic>? trackData;
+  final String? note;
+
+  const SpotifyContentScreen({
+    required this.openSpotifyFormModal,
+    required this.setPage,
+    this.trackData,
+    this.note,
+    this.bodyWidget,
+    super.key,
+  });
+
+  Widget get body {
+    if (bodyWidget != null) {
+      return bodyWidget!;
+    } else {
+      return Center(child: HasMusic(trackData!, note: note));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBarComponent(
+        'Música Dedicada',
+        actions: [
+          IconButton(
+            onPressed: () => openSpotifyFormModal(context),
+            icon: const FaIcon(FontAwesomeIcons.link, size: 20),
+          ),
+        ],
+      ),
+      drawer: DrawerComponent(setPage),
+      body: body,
+    );
+  }
+}
+
 class HasMusic extends StatelessWidget {
-  final Map<String, dynamic>? _trackData;
+  final Map<String, dynamic> _trackData;
   final String? note;
   const HasMusic(this._trackData, {this.note, super.key});
 

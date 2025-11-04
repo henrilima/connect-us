@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SpotifyCard extends StatefulWidget {
-  final Map<String, dynamic>? trackData;
+  final Map<String, dynamic> trackData;
   final bool minimal;
   const SpotifyCard(this.trackData, {this.minimal = false, super.key});
 
@@ -33,15 +33,15 @@ class _SpotifyCardState extends State<SpotifyCard> {
     final track = widget.trackData;
 
     final imageUrl =
-        track?['album']?['images'] != null &&
-            (track!['album']['images'] as List).isNotEmpty
+        track['album']?['images'] != null &&
+            (track['album']['images'] as List).isNotEmpty
         ? track['album']['images'][0]
         : 'https://via.placeholder.com/80';
 
     final List<int> releasedDate = [];
 
     for (int x = 0; x < 3; x++) {
-      final String date = track!['album']['release_date']
+      final String date = track['album']['release_date']
           .toString()
           .replaceAll('-', ' ')
           .split(' ')
@@ -79,7 +79,7 @@ class _SpotifyCardState extends State<SpotifyCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${track?['name'] ?? 'Faixa desconhecida'}${track?['explicit'] ? ' 🅴' : ''}',
+                        '${track['name']}${track['explicit'] ? ' 🅴' : ''}',
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 20,
@@ -94,8 +94,8 @@ class _SpotifyCardState extends State<SpotifyCard> {
                         children: [
                           Expanded(
                             child: Text(
-                              track?['artists'] != null &&
-                                      (track!['artists'] as List).isNotEmpty
+                              track['artists'] != null &&
+                                      (track['artists'] as List).isNotEmpty
                                   ? (track['artists'] as List)
                                         .map((a) => a['name'])
                                         .join(', ')
@@ -114,7 +114,7 @@ class _SpotifyCardState extends State<SpotifyCard> {
                               color: Colors.white,
                               size: 26,
                             ),
-                            onPressed: () => _openMusicLink(track?['id']),
+                            onPressed: () => _openMusicLink(track['id']),
                           ),
                         ],
                       ),
@@ -168,7 +168,7 @@ class _SpotifyCardState extends State<SpotifyCard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${track?['name'] ?? 'Faixa desconhecida'}${track?['explicit'] ? ' 🅴' : ''}',
+                              '${track['name']}${track['explicit'] ? ' 🅴' : ''}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 20,
@@ -179,8 +179,8 @@ class _SpotifyCardState extends State<SpotifyCard> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              track?['artists'] != null &&
-                                      (track!['artists'] as List).isNotEmpty
+                              track['artists'] != null &&
+                                      (track['artists'] as List).isNotEmpty
                                   ? (track['artists'] as List)
                                         .map((a) => a['name'])
                                         .join(', ')
@@ -212,7 +212,7 @@ class _SpotifyCardState extends State<SpotifyCard> {
                       color: Colors.white,
                       size: 26,
                     ),
-                    onPressed: () => _openMusicLink(track?['id']),
+                    onPressed: () => _openMusicLink(track['id']),
                   ),
                 ],
               ),
