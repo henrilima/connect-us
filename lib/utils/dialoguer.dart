@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Classe Dialoguer, feita para exibir diálogos simples ou customizados.
+/// Classe Dialoguer, feita para exibir diálogos simples ou customizados e modais.
 class Dialoguer {
   static void showSimpleAlert({
     required BuildContext context,
@@ -49,6 +49,29 @@ class Dialoguer {
               },
             ),
           ],
+        );
+      },
+    );
+  }
+
+  static void openModalBottomSheet({
+    required BuildContext context,
+    required Widget form,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: form,
+            ),
+          ),
         );
       },
     );
