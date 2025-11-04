@@ -2,6 +2,7 @@ import 'package:connect/components/appbar.dart';
 import 'package:connect/components/drawer.dart';
 import 'package:connect/forms/event_form.dart';
 import 'package:connect/services/database_service.dart';
+import 'package:connect/utils/dialoguer.dart';
 import 'package:connect/widgets/error_screen.dart';
 import 'package:connect/widgets/loading_screen.dart';
 import 'package:connect/widgets/timeline_card.dart';
@@ -31,6 +32,13 @@ class _TimelineScreenState extends State<TimelineScreen> {
     return widget.userData['relationshipId'] ?? '';
   }
 
+  void _openTimelineFormModal() {
+    return Dialoguer.openModalBottomSheet(
+      context: context,
+      form: EventForm(userData: widget.userData),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<Map<String, dynamic>?>(
@@ -57,14 +65,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
               IconButton(
                 icon: FaIcon(FontAwesomeIcons.plus),
                 tooltip: 'Adicionar evento',
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          EventForm(userData: widget.userData),
-                    ),
-                  );
-                },
+                onPressed: () => _openTimelineFormModal(),
               ),
             ],
           ),

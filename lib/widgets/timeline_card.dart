@@ -1,6 +1,7 @@
 import 'package:connect/forms/event_form.dart';
 import 'package:connect/services/database_service.dart';
 import 'package:connect/theme/app_color.dart';
+import 'package:connect/utils/dialoguer.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -45,14 +46,13 @@ class _TimelineCardState extends State<TimelineCard> {
     return '';
   }
 
-  editEvent() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => EventForm(
-          userData: widget.userData,
-          eventKey: widget.eventKey,
-          method: 'edit',
-        ),
+  _editEvent() {
+    return Dialoguer.openModalBottomSheet(
+      context: context,
+      form: EventForm(
+        userData: widget.userData,
+        eventKey: widget.eventKey,
+        method: 'edit',
       ),
     );
   }
@@ -198,7 +198,7 @@ class _TimelineCardState extends State<TimelineCard> {
 
                       onSelected: (String value) async {
                         if (value == 'Editar') {
-                          editEvent();
+                          _editEvent();
                         } else if (value == 'Excluir') {
                           await _confirmDelete();
                         }
