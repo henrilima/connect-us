@@ -4,6 +4,7 @@ import 'package:connect/services/database_service.dart';
 import 'package:connect/services/location_service.dart';
 import 'package:connect/theme/app_color.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class LocationScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -36,14 +37,32 @@ class _LocationScreenState extends State<LocationScreen> {
     setState(() {
       distance = currentDistance;
       _hasPermission = hasPermission;
-      _isLoading = false;
+
+      if (_isLoading) {
+        _isLoading = false;
+      }
     });
+  }
+
+  Future<void> _updateAndFetchMyOwnLocation() async {
+    setState(() => _isLoading = true);
+    await DatabaseService().updateLocation(widget.userData['userId']);
+    updateLocation();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarComponent("Distância"),
+      appBar: AppBarComponent(
+        "Distância",
+        actions: [
+          if (distance != null || _hasPermission)
+            IconButton(
+              onPressed: () => _updateAndFetchMyOwnLocation(),
+              icon: FaIcon(FontAwesomeIcons.repeat),
+            ),
+        ],
+      ),
       drawer: DrawerComponent(widget.setPage),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
