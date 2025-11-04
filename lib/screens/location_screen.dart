@@ -16,6 +16,7 @@ class LocationScreen extends StatefulWidget {
 
 class _LocationScreenState extends State<LocationScreen> {
   String? distance;
+  bool _hasPermission = false;
   bool _isLoading = true;
 
   @override
@@ -30,8 +31,11 @@ class _LocationScreenState extends State<LocationScreen> {
       widget.userData['partnerId'],
     );
 
+    final hasPermission = await LocationService().hasPermission();
+
     setState(() {
       distance = currentDistance;
+      _hasPermission = hasPermission;
       _isLoading = false;
     });
   }
@@ -43,7 +47,7 @@ class _LocationScreenState extends State<LocationScreen> {
       drawer: DrawerComponent(widget.setPage),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : distance == null
+          : distance == null || !_hasPermission
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,

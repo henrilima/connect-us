@@ -3,6 +3,7 @@ import 'package:connect/components/drawer.dart';
 import 'package:connect/forms/spotify_form.dart';
 import 'package:connect/services/database_service.dart';
 import 'package:connect/services/spotify_service.dart';
+import 'package:connect/theme/app_color.dart';
 import 'package:connect/widgets/error_screen.dart';
 import 'package:connect/widgets/spotify_card.dart';
 import 'package:flutter/material.dart';
@@ -167,14 +168,14 @@ class HasMusic extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white,
+                      color: AppColors.textColorSecondary,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
                   Text(
                     '"${note!}"',
-                    style: const TextStyle(fontSize: 16, color: Colors.white70),
+                    style: const TextStyle(fontSize: 16, color: Colors.white),
                     textAlign: TextAlign.center,
                   ),
                 ],

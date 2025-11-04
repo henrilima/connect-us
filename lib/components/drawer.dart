@@ -67,7 +67,7 @@ class DrawerComponent extends StatelessWidget {
               color: AppColors.textColorSecondary,
             ),
             title: Text(
-              'Chat',
+              'Chat Silencioso',
               style: TextStyle(
                 color: AppColors.textColorSecondary,
                 fontWeight: FontWeight.w600,
