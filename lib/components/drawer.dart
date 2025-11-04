@@ -80,7 +80,7 @@ class DrawerComponent extends StatelessWidget {
           ListTile(
             leading: FaIcon(
               FontAwesomeIcons.arrowUp91,
-              color: AppColors.textColor,
+              color: AppColors.textColorSecondary,
             ),
             title: Text(
               'Contadores',
@@ -96,7 +96,7 @@ class DrawerComponent extends StatelessWidget {
           ListTile(
             leading: FaIcon(
               FontAwesomeIcons.locationArrow,
-              color: AppColors.textColor,
+              color: AppColors.textColorSecondary,
             ),
             title: Text(
               'Distância',
@@ -112,7 +112,7 @@ class DrawerComponent extends StatelessWidget {
           ListTile(
             leading: FaIcon(
               FontAwesomeIcons.timeline,
-              color: AppColors.textColor,
+              color: AppColors.textColorSecondary,
             ),
             title: Text(
               'Linha do Tempo',
@@ -128,7 +128,7 @@ class DrawerComponent extends StatelessWidget {
           ListTile(
             leading: FaIcon(
               FontAwesomeIcons.heart,
-              color: AppColors.textColor,
+              color: AppColors.textColorSecondary,
             ),
             title: Text(
               'Linguagem do Amor',
@@ -139,6 +139,22 @@ class DrawerComponent extends StatelessWidget {
             ),
             onTap: () {
               setPage("lovelanguage");
+            },
+          ),
+          ListTile(
+            leading: FaIcon(
+              FontAwesomeIcons.spotify,
+              color: AppColors.textColorSecondary,
+            ),
+            title: Text(
+              'Música Dedicada',
+              style: TextStyle(
+                color: AppColors.textColorSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            onTap: () {
+              setPage("spotify");
             },
           ),
           ListTile(

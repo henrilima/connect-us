@@ -322,7 +322,7 @@ class DatabaseService {
     });
   }
 
-  Future<String> getUsersDistance(String authorId, String partnerId) async {
+  Future<String?> getUsersDistance(String authorId, String partnerId) async {
     final author = await dbRef.child('users/$authorId/location').get();
     final partner = await dbRef.child('users/$partnerId/location').get();
 
@@ -344,7 +344,7 @@ class DatabaseService {
 
       return (originalDistance / 1000).toStringAsFixed(2);
     } else {
-      return "incalculáveis ";
+      return null;
     }
   }
 
@@ -474,6 +474,45 @@ class DatabaseService {
       }
 
       return <String, String>{};
+    });
+  }
+
+  Future<void> updatePartnerMusic(
+    String partnerId,
+    String link,
+    String? note,
+  ) async {
+    await dbRef.child('users/$partnerId/partner-music').set({
+      'url': link,
+      'note': note,
+    });
+  }
+
+  Future<Map<String, String>> getPartnerMusic(String partnerId) async {
+    final userPartnerMusicRef = await dbRef
+        .child('users/$partnerId/partner-music')
+        .get();
+
+    if (userPartnerMusicRef.exists) {
+      final data = userPartnerMusicRef.value as Map;
+      return Map<String, String>.from(data);
+    } else {
+      return <String, String>{};
+    }
+  }
+
+  Stream<Map<String, String>> streamPartnerMusic(String userId) {
+    final userPartnerMusicRef = dbRef.child('users/$userId/partner-music');
+
+    return userPartnerMusicRef.onValue.map((event) {
+      final snapshot = event.snapshot;
+
+      if (snapshot.exists) {
+        final data = snapshot.value as Map;
+        return Map<String, String>.from(data);
+      } else {
+        return <String, String>{};
+      }
     });
   }
 }

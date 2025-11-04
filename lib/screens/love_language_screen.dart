@@ -299,7 +299,7 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
                   toAvoid: details['to_avoid'] as String,
                 ),
               );
-            }).toList(),
+            }),
           ],
         ),
       ),

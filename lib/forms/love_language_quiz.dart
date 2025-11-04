@@ -42,12 +42,22 @@ class _LoveLanguageQuizState extends State<LoveLanguageQuiz> {
       'atos_de_servico': results['atos_de_servico'].toString(),
       'toque_fisico': results['toque_fisico'].toString(),
     });
-    if (!context.mounted) return;
-    AppMessenger(context, "Seu resultado foi salvo, você pode conferir ele no ícone de receita.", "success").show();
-    await Future.delayed(const Duration(milliseconds: 100));
 
     if (!context.mounted) return;
-    Navigator.of(context).pop();
+
+    if (context.mounted) {
+      AppMessenger(
+        context,
+        "Seu resultado foi salvo, você pode conferir ele no ícone de receita.",
+        "success",
+      ).show();
+    }
+
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    if (context.mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   Map<String, double> calculatePercentages(List<int> selectedOptionIndices) {

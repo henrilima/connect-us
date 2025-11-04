@@ -101,109 +101,112 @@ class _TimelineCardState extends State<TimelineCard> {
       width: double.infinity,
       child: Column(
         children: [
-          Card(
-            elevation: 0,
-            child: Stack(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(
-                    top: 28,
-                    bottom: 20,
-                    left: 24,
-                    right: 24,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${dateTime.day} de ${_monthName(dateTime.month)} de ${dateTime.year}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              height: 1,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          Text(
-                            widget.title,
-                            style: TextStyle(
-                              fontSize: 20,
-                              height: 1.5,
-                              color: AppColors.secondaryColorHover,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        widget.description,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: 6,
-                  right: 12,
-                  child: PopupMenuButton(
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+          SizedBox(
+            width: double.infinity,
+            child: Card(
+              elevation: 0,
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      top: 28,
+                      bottom: 20,
+                      left: 24,
+                      right: 24,
                     ),
-                    color: AppColors.backgroundColor,
-                    padding: EdgeInsets.all(6),
-                    constraints: BoxConstraints(),
-                    itemBuilder: (BuildContext context) => [
-                      PopupMenuItem(
-                        value: 'Editar',
-                        child: Row(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            FaIcon(
-                              FontAwesomeIcons.pencil,
-                              size: 16,
-                              color: AppColors.infoColorHover,
-                            ),
-                            SizedBox(width: 8),
-                            Text('Editar'),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: 'Excluir',
-                        child: Row(
-                          children: [
-                            FaIcon(
-                              FontAwesomeIcons.trash,
-                              size: 16,
-                              color: AppColors.errorColor,
-                            ),
-                            SizedBox(width: 8),
                             Text(
-                              'Excluir',
-                              style: TextStyle(color: AppColors.errorColor),
+                              '${dateTime.day} de ${_monthName(dateTime.month)} de ${dateTime.year}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                height: 1,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              widget.title,
+                              style: TextStyle(
+                                fontSize: 20,
+                                height: 1.5,
+                                color: AppColors.secondaryColorHover,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-
-                    onSelected: (String value) async {
-                      if (value == 'Editar') {
-                        editEvent();
-                      } else if (value == 'Excluir') {
-                        await _confirmDelete();
-                      }
-                    },
+                        const SizedBox(height: 8),
+                        Text(
+                          widget.description,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  Positioned(
+                    top: 6,
+                    right: 12,
+                    child: PopupMenuButton(
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      color: AppColors.backgroundColor,
+                      padding: EdgeInsets.all(6),
+                      constraints: BoxConstraints(),
+                      itemBuilder: (BuildContext context) => [
+                        PopupMenuItem(
+                          value: 'Editar',
+                          child: Row(
+                            children: [
+                              FaIcon(
+                                FontAwesomeIcons.pencil,
+                                size: 16,
+                                color: AppColors.infoColorHover,
+                              ),
+                              SizedBox(width: 8),
+                              Text('Editar'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'Excluir',
+                          child: Row(
+                            children: [
+                              FaIcon(
+                                FontAwesomeIcons.trash,
+                                size: 16,
+                                color: AppColors.errorColor,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Excluir',
+                                style: TextStyle(color: AppColors.errorColor),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      onSelected: (String value) async {
+                        if (value == 'Editar') {
+                          editEvent();
+                        } else if (value == 'Excluir') {
+                          await _confirmDelete();
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 12),

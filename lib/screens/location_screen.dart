@@ -1,6 +1,7 @@
 import 'package:connect/components/appbar.dart';
 import 'package:connect/components/drawer.dart';
 import 'package:connect/services/database_service.dart';
+import 'package:connect/services/location_service.dart';
 import 'package:connect/theme/app_color.dart';
 import 'package:flutter/material.dart';
 
@@ -15,18 +16,15 @@ class LocationScreen extends StatefulWidget {
 
 class _LocationScreenState extends State<LocationScreen> {
   String? distance;
-  late Function setPage;
-  bool isLoading = true;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    setPage = widget.setPage;
     updateLocation();
   }
 
   Future<void> updateLocation() async {
-    DatabaseService().updateLocation(widget.userData['userId']);
     final currentDistance = await DatabaseService().getUsersDistance(
       widget.userData['userId'],
       widget.userData['partnerId'],
@@ -34,22 +32,37 @@ class _LocationScreenState extends State<LocationScreen> {
 
     setState(() {
       distance = currentDistance;
-      isLoading = false;
+      _isLoading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return isLoading
-        ? Scaffold(
-            appBar: AppBarComponent("Distância"),
-            drawer: DrawerComponent(setPage),
-            body: Center(child: CircularProgressIndicator()),
-          )
-        : Scaffold(
-            appBar: AppBarComponent("Distância"),
-            drawer: DrawerComponent(setPage),
-            body: Padding(
+    return Scaffold(
+      appBar: AppBarComponent("Distância"),
+      drawer: DrawerComponent(widget.setPage),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : distance == null
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Para exibir a distância, ambos os usuários precisam dar permissão de acesso a localização.",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () async {
+                    await LocationService().requestPermission(context);
+                  },
+                  child: Text("Permitir"),
+                ),
+              ],
+            )
+          : Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -96,6 +109,6 @@ class _LocationScreenState extends State<LocationScreen> {
                 ],
               ),
             ),
-          );
+    );
   }
 }
