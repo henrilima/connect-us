@@ -1,7 +1,10 @@
 import 'package:connect/components/appbar.dart';
 import 'package:connect/components/drawer.dart';
+import 'package:connect/forms/counter_form.dart';
 import 'package:connect/services/database_service.dart';
-import 'package:connect/widgets/data_card.dart';
+import 'package:connect/utils/dialoguer.dart';
+import 'package:connect/utils/icon.dart';
+import 'package:connect/widgets/counter_card.dart';
 import 'package:connect/widgets/error_screen.dart';
 import 'package:connect/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
@@ -19,20 +22,25 @@ class CountersScreen extends StatefulWidget {
 class _CountersScreenState extends State<CountersScreen> {
   late Function setPage;
 
-  String get relationshipId {
-    return widget.userData['relationshipId'] ?? '';
-  }
-
   @override
   void initState() {
     super.initState();
     setPage = widget.setPage;
   }
 
+  _openCounterFormModal() {
+    Dialoguer.openModalBottomSheet(
+      context: context,
+      form: CounterForm(widget.userData['relationshipId']),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Map<String, dynamic>?>(
-      stream: DatabaseService().getCountsStream(relationshipId),
+    return StreamBuilder<Map<String, dynamic>>(
+      stream: DatabaseService().getCountsStream(
+        widget.userData['relationshipId'],
+      ),
 
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -44,9 +52,21 @@ class _CountersScreenState extends State<CountersScreen> {
         }
 
         final Map<String, dynamic> counters = snapshot.data ?? {};
+        Map<String, dynamic>? customs;
+        if (counters['custom'] != null) {
+          customs = Map<String, dynamic>.from(counters['custom'] as Map);
+        }
 
         return Scaffold(
-          appBar: AppBarComponent("Contadores"),
+          appBar: AppBarComponent(
+            "Contadores",
+            actions: [
+              IconButton(
+                onPressed: () => _openCounterFormModal(),
+                icon: FaIcon(FontAwesomeIcons.plus),
+              ),
+            ],
+          ),
           drawer: DrawerComponent(setPage),
           body: SingleChildScrollView(
             child: Padding(
@@ -59,7 +79,7 @@ class _CountersScreenState extends State<CountersScreen> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      DataCard(
+                      CounterCard(
                         text: "Abraços",
                         value: "${counters['hugCount']}",
                         description:
@@ -68,17 +88,17 @@ class _CountersScreenState extends State<CountersScreen> {
                         type: 1,
                         lastUpdate: counters['hugCountTime'] ?? '',
                         execPlus: () => DatabaseService().manageCount(
-                          relationshipId,
+                          widget.userData['relationshipId'],
                           countName: 'hugCount',
                           increment: true,
                         ),
                         execMinus: () => DatabaseService().manageCount(
-                          relationshipId,
+                          widget.userData['relationshipId'],
                           countName: 'hugCount',
                           increment: false,
                         ),
                       ),
-                      DataCard(
+                      CounterCard(
                         text: "Beijos",
                         value: "${counters['kissCount']}",
                         description:
@@ -87,16 +107,43 @@ class _CountersScreenState extends State<CountersScreen> {
                         type: 2,
                         lastUpdate: counters['kissCountTime'] ?? '',
                         execPlus: () => DatabaseService().manageCount(
-                          relationshipId,
+                          widget.userData['relationshipId'],
                           countName: 'kissCount',
                           increment: true,
                         ),
                         execMinus: () => DatabaseService().manageCount(
-                          relationshipId,
+                          widget.userData['relationshipId'],
                           countName: 'kissCount',
                           increment: false,
                         ),
                       ),
+
+                      if (customs != null && customs.isNotEmpty)
+                        ...customs.entries.map((entry) {
+                          final counter = entry.value;
+                          return CounterCard(
+                            text: counter['title'],
+                            value: counter['value'].toString(),
+                            description: counter['description'],
+                            icon: IconHelper.getIcon(counter['icon']),
+                            lastUpdate: counter['time'] ?? '',
+                            execPlus: () => DatabaseService().manageCount(
+                              widget.userData['relationshipId'],
+                              countName: entry.key,
+                              increment: true,
+                              custom: true,
+                            ),
+                            execMinus: () => DatabaseService().manageCount(
+                              widget.userData['relationshipId'],
+                              countName: entry.key,
+                              increment: false,
+                              custom: true,
+                            ),
+                            isCustom: true,
+                            counterKey: entry.key,
+                            relationshipId: widget.userData['relationshipId'],
+                          );
+                        }),
                     ],
                   ),
                 ),

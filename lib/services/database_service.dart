@@ -124,21 +124,80 @@ class DatabaseService {
     String relationshipId, {
     required String countName,
     bool increment = true,
+    bool custom = false,
   }) async {
     int op = increment ? 1 : -1;
-    final relationshipRef = databaseReference.child(
-      'relationships/$relationshipId/counters/$countName',
+    var relationshipRef = databaseReference.child(
+      'relationships/$relationshipId/counters/',
     );
 
+    if (custom) {
+      relationshipRef = relationshipRef.child('custom/$countName');
+    } else {
+      relationshipRef = relationshipRef.child(countName);
+    }
+
     final snapshot = await relationshipRef.get();
-    int? currentValue = snapshot.value as int?;
+    Map<String, dynamic>? data;
+    if (custom) {
+      data = Map<String, dynamic>.from(snapshot.value as Map);
+    }
+    int? currentValue = custom
+        ? data!['value'] as int?
+        : snapshot.value as int?;
     currentValue ??= 0;
 
     if ((currentValue + op) < 0) return;
-    await relationshipRef.set(ServerValue.increment(increment ? 1 : -1));
+    if (custom) {
+      await relationshipRef
+          .child('value')
+          .set(ServerValue.increment(increment ? 1 : -1));
+      await relationshipRef.child('time').set(DateTime.now().toIso8601String());
+    } else {
+      await relationshipRef.set(ServerValue.increment(increment ? 1 : -1));
+      await databaseReference
+          .child('relationships/$relationshipId/counters/${countName}Time')
+          .set(DateTime.now().toIso8601String());
+    }
+  }
+
+  Future<void> setCounter(
+    String relationshipId, {
+    required String title,
+    required String description,
+    required String icon,
+    bool update = false,
+    String? counterKey,
+  }) async {
+    final relationshipRef = databaseReference.child(
+      'relationships/$relationshipId/counters/custom/',
+    );
+
+    if (update && counterKey != null) {
+      await relationshipRef.child(counterKey)
+        .update({
+          'title': title,
+          'description': description,
+          'icon': icon,
+        });
+    } else {
+      await relationshipRef.push()
+        .set({
+          'title': title,
+          'description': description,
+          'icon': icon,
+          'value': 0,
+        });
+    }
+  }
+
+  Future<void> deleteCounter(
+    String relationshipId, {
+    required String countName,
+  }) async {
     await databaseReference
-        .child('relationships/$relationshipId/counters/${countName}Time')
-        .set(DateTime.now().toIso8601String());
+        .child('relationships/$relationshipId/counters/custom/$countName')
+        .remove();
   }
 
   Future<void> addEventFromTimeline({
@@ -164,7 +223,7 @@ class DatabaseService {
         return await relationshipTimelineRef.child(eventkey).set(data);
       }
     } else {
-      await relationshipTimelineRef.push().set(data);
+      await relationshipTimelineRef.push().update(data);
     }
   }
 
@@ -242,10 +301,10 @@ class DatabaseService {
   }
 
   Future<void> updateLocation(String userId, Position position) async {
-      await databaseReference.child('users/$userId/location').set({
-        'latitude': position.latitude,
-        'longitude': position.longitude,
-      });
+    await databaseReference.child('users/$userId/location').set({
+      'latitude': position.latitude,
+      'longitude': position.longitude,
+    });
   }
 
   Future<String?> getUsersDistance(String authorId, String partnerId) async {
@@ -311,6 +370,22 @@ class DatabaseService {
     } else {
       return <String, String>{};
     }
+  }
+
+  Future<Map<String, dynamic>> getCustomCounter(
+    String relationshipId,
+    String counterKey,
+  ) async {
+    final snapshot = await databaseReference
+        .child('relationships/$relationshipId/counters/custom/$counterKey')
+        .get();
+
+    if (snapshot.exists) {
+      final data = snapshot.value as Map;
+      return Map<String, dynamic>.from(data);
+    }
+
+    return <String, dynamic>{};
   }
 
   /// ? Streams
@@ -428,11 +503,11 @@ class DatabaseService {
 
   Map<String, dynamic> sortMapByDate(Map<String, dynamic> data) {
     final entries = data.entries.toList()
-    ..sort((a, b) {
-      final aDate = DateTime.tryParse(a.value['date'] ?? '') ?? DateTime(0);
-      final bDate = DateTime.tryParse(b.value['date'] ?? '') ?? DateTime(0);
-      return aDate.compareTo(bDate);
-    });
-  return Map.fromEntries(entries);
+      ..sort((a, b) {
+        final aDate = DateTime.tryParse(a.value['date'] ?? '') ?? DateTime(0);
+        final bDate = DateTime.tryParse(b.value['date'] ?? '') ?? DateTime(0);
+        return aDate.compareTo(bDate);
+      });
+    return Map.fromEntries(entries);
   }
 }
