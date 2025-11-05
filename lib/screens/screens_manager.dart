@@ -1,6 +1,7 @@
 import 'package:connect/screens/chat_screen.dart';
 import 'package:connect/screens/location_screen.dart';
 import 'package:connect/screens/love_language_screen.dart';
+import 'package:connect/screens/settings_screen.dart';
 import 'package:connect/screens/spotify_screen.dart';
 import 'package:connect/screens/timeline_screen.dart';
 import 'package:connect/services/database_service.dart';
@@ -75,6 +76,7 @@ class _ScreensManagerState extends State<ScreensManager> {
   }
 
   String _currentPage = "home";
+  String _lastPage = "home";
 
   Map<String, Widget> get pages => {
     "home": HomeScreen(setPage, userData: userData),
@@ -84,12 +86,26 @@ class _ScreensManagerState extends State<ScreensManager> {
     "timeline": TimelineScreen(setPage, userData: userData),
     "lovelanguage": LoveLanguageScreen(setPage, userData: userData),
     "spotify": SpotifyScreen(setPage, userData: userData),
-    "settings": const Scaffold(body: Center(child: Text("Settings Screen"))),
+    "settings": SettingsScreen(setPage, userId: userData['userId']),
   };
 
   void setPage(String newPage) {
     if (pages.containsKey(newPage)) {
+      if (newPage == "settings") {
+        Navigator.of(context).pop();
+
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => pages[newPage]!));
+
+        setState(() {
+          _currentPage = _lastPage;
+        });
+        return;
+      }
+
       setState(() {
+        _lastPage = _currentPage;
         _currentPage = newPage;
       });
     }

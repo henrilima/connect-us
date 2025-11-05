@@ -27,14 +27,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     getRelationshipData();
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        relationshipDate = getDifferenceDate(
-          DateTime(userDate.year, userDate.month, userDate.day),
-        );
-      });
-    });
   }
 
   @override
@@ -51,6 +43,14 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       relationshipData = data;
       userDate = DateTime.parse(data['relationshipDate']);
+    });
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        relationshipDate = getDifferenceDate(
+          DateTime(userDate.year, userDate.month, userDate.day),
+        );
+      });
     });
   }
 

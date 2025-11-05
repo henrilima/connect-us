@@ -174,20 +174,18 @@ class DatabaseService {
     );
 
     if (update && counterKey != null) {
-      await relationshipRef.child(counterKey)
-        .update({
-          'title': title,
-          'description': description,
-          'icon': icon,
-        });
+      await relationshipRef.child(counterKey).update({
+        'title': title,
+        'description': description,
+        'icon': icon,
+      });
     } else {
-      await relationshipRef.push()
-        .set({
-          'title': title,
-          'description': description,
-          'icon': icon,
-          'value': 0,
-        });
+      await relationshipRef.push().set({
+        'title': title,
+        'description': description,
+        'icon': icon,
+        'value': 0,
+      });
     }
   }
 
@@ -279,6 +277,23 @@ class DatabaseService {
       });
     } else {
       await databaseReference.child('users/$partnerId/partner-music').remove();
+    }
+  }
+
+  Future<void> updateUserAndRelationshipData({
+    String? userId,
+    String? relationshipId,
+    String? newUsername,
+    DateTime? newDate,
+  }) async {
+    if (newUsername != null && newUsername.isNotEmpty) {
+      await databaseReference.child('users/$userId/username').set(newUsername);
+    }
+
+    if (newDate != null) {
+      await databaseReference
+          .child('relationships/$relationshipId/relationshipDate')
+          .set(newDate.toIso8601String());
     }
   }
 

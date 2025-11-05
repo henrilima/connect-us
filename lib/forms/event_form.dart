@@ -57,7 +57,7 @@ class _EventFormState extends State<EventForm> {
     }
   }
 
-  Future<void> _loadAndSetData() async {
+  _loadAndSetData() async {
     final Map<String, dynamic> eventDataTest = await DatabaseService()
         .getEventFromTimeline(
           widget.userData['relationshipId'],

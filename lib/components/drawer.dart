@@ -159,6 +159,22 @@ class DrawerComponent extends StatelessWidget {
           ),
           ListTile(
             leading: FaIcon(
+              FontAwesomeIcons.userAstronaut,
+              color: AppColors.infoColor,
+            ),
+            title: Text(
+              'Dados e Perfil',
+              style: TextStyle(
+                color: AppColors.infoColorHover,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            onTap: () {
+              setPage("settings");
+            },
+          ),
+          ListTile(
+            leading: FaIcon(
               FontAwesomeIcons.rightFromBracket,
               color: AppColors.errorColor,
             ),
