@@ -9,6 +9,7 @@ import 'package:connect/screens/home_screen.dart';
 import 'package:connect/screens/counters_screen.dart';
 import 'package:connect/services/location_service.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 class ScreensManager extends StatefulWidget {
@@ -36,13 +37,13 @@ class _ScreensManagerState extends State<ScreensManager> {
 
     if (userId != null) {
       try {
-        final Map<String, dynamic>? data = await DatabaseService().getUserData(
+        final Map<String, dynamic> data = await DatabaseService().getUserData(
           userId,
         );
 
         if (!mounted) return;
 
-        if (data == null || data.isEmpty) {
+        if (data.isEmpty) {
           context.read<AuthProvider>().logoutUser();
           return;
         }
@@ -68,7 +69,8 @@ class _ScreensManagerState extends State<ScreensManager> {
 
   Future<void> _updateUserLocation(String id) async {
     if (await LocationService().hasPermission()) {
-      await DatabaseService().updateLocation(id);
+      final Position position = await LocationService().getCurrentLocation();
+      await DatabaseService().updateLocation(id, position);
     }
   }
 

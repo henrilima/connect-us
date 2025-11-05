@@ -5,6 +5,7 @@ import 'package:connect/services/location_service.dart';
 import 'package:connect/theme/app_color.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 
 class LocationScreen extends StatefulWidget {
   final Map<String, dynamic> userData;
@@ -46,7 +47,8 @@ class _LocationScreenState extends State<LocationScreen> {
 
   Future<void> _updateAndFetchMyOwnLocation() async {
     setState(() => _isLoading = true);
-    await DatabaseService().updateLocation(widget.userData['userId']);
+    final Position position = await LocationService().getCurrentLocation();
+    await DatabaseService().updateLocation(widget.userData['userId'], position);
     updateLocation();
   }
 
