@@ -61,7 +61,7 @@ class Dialoguer {
     required List<Widget> actionsWidget,
     String buttonText = 'OK',
   }) async {
-    final bool confirm = await showDialog(
+    final bool? confirm = await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -71,7 +71,7 @@ class Dialoguer {
         );
       },
     );
-
+    if (confirm == null) return false;
     return confirm;
   }
 
