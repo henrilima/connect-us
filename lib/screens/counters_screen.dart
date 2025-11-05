@@ -67,12 +67,14 @@ class _CountersScreenState extends State<CountersScreen> {
                         icon: FontAwesomeIcons.handshake,
                         type: 1,
                         lastUpdate: counters['hugCountTime'] ?? '',
-                        execPlus: () => DatabaseService().manageHugsCount(
+                        execPlus: () => DatabaseService().manageCount(
                           relationshipId,
+                          countName: 'hugCount',
                           increment: true,
                         ),
-                        execMinus: () => DatabaseService().manageHugsCount(
+                        execMinus: () => DatabaseService().manageCount(
                           relationshipId,
+                          countName: 'hugCount',
                           increment: false,
                         ),
                       ),
@@ -84,12 +86,14 @@ class _CountersScreenState extends State<CountersScreen> {
                         icon: FontAwesomeIcons.faceKiss,
                         type: 2,
                         lastUpdate: counters['kissCountTime'] ?? '',
-                        execPlus: () => DatabaseService().manageKissesCount(
+                        execPlus: () => DatabaseService().manageCount(
                           relationshipId,
+                          countName: 'kissCount',
                           increment: true,
                         ),
-                        execMinus: () => DatabaseService().manageKissesCount(
+                        execMinus: () => DatabaseService().manageCount(
                           relationshipId,
+                          countName: 'kissCount',
                           increment: false,
                         ),
                       ),
