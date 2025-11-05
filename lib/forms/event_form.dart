@@ -174,11 +174,10 @@ class _EventFormState extends State<EventForm> {
                     _showMessage(clear: true);
                   }
 
-                  _showMessage(
-                    message: "success:O evento foi $actionText com sucesso.",
-                  );
-
                   if (widget.method == 'add') {
+                    _showMessage(
+                      message: "success:O evento foi $actionText com sucesso.",
+                    );
                     _titleController.text = "";
                     _descriptionController.text = "";
                   }

@@ -141,7 +141,7 @@ class _TimelineCardState extends State<TimelineCard> {
                       constraints: BoxConstraints(),
                       itemBuilder: (BuildContext context) => [
                         PopupMenuItem(
-                          value: 'Editar',
+                          value: 'edit',
                           child: Row(
                             children: [
                               FaIcon(
@@ -155,7 +155,7 @@ class _TimelineCardState extends State<TimelineCard> {
                           ),
                         ),
                         PopupMenuItem(
-                          value: 'Excluir',
+                          value: 'delete',
                           child: Row(
                             children: [
                               FaIcon(
@@ -174,9 +174,9 @@ class _TimelineCardState extends State<TimelineCard> {
                       ],
 
                       onSelected: (String value) async {
-                        if (value == 'Editar') {
+                        if (value == 'edit') {
                           _editEvent();
-                        } else if (value == 'Excluir') {
+                        } else if (value == 'delete') {
                           await _confirmDelete();
                         }
                       },

@@ -43,7 +43,7 @@ class _SpotifyScreenState extends State<SpotifyScreen> {
       widget.userData['partnerId'],
       link,
       note,
-      delete: delete
+      delete: delete,
     );
 
     if (!mounted) return;
@@ -193,7 +193,7 @@ class HasMusic extends StatelessWidget {
                     "O seu par deixou uma mensagem junto com a música:",
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w400,
                       color: AppColors.textColorSecondary,
                     ),
                     textAlign: TextAlign.center,
@@ -201,7 +201,11 @@ class HasMusic extends StatelessWidget {
                   const SizedBox(height: 24),
                   Text(
                     '"${note!}"',
-                    style: const TextStyle(fontSize: 16, color: Colors.white),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.textColor,
+                      fontWeight: FontWeight.w600,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ],

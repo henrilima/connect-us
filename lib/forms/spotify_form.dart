@@ -13,12 +13,24 @@ class SpotifyForm extends StatefulWidget {
 }
 
 class _SpotifyFormState extends State<SpotifyForm> {
+  Map<String, dynamic>? _data;
+  String _message = '';
+
   final _linkController = TextEditingController();
   final _noteController = TextEditingController();
-  Map<String, dynamic>? _data;
+
+  _showMessage({String? message, clear = false}) {
+    setState(() {
+      _message = clear ? '' : message!;
+    });
+  }
 
   void _submitForm({bool delete = false}) async {
-    if (_linkController.text.isEmpty) return;
+    if (_linkController.text.isEmpty) {
+      _showMessage(message: "error:Você precisa inserir um link de uma música do spotify.");
+      return;
+    }
+
     if (delete) {
       final confirm = await Dialoguer.showConfirmAlert(
         context: context,
@@ -82,7 +94,7 @@ class _SpotifyFormState extends State<SpotifyForm> {
       color: AppColors.backgroundColor,
       elevation: 5,
       child: Padding(
-        padding: const EdgeInsets.all(10.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -98,6 +110,18 @@ class _SpotifyFormState extends State<SpotifyForm> {
               "Dedique uma música para o seu par. Insira o link de uma música do Spotify e defina uma nota (opcional).",
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
+            SizedBox(height: 12),
+            if (_message.isNotEmpty)
+              Text(
+                _message.split(':')[1],
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: _message.split(':')[0] == 'error'
+                      ? AppColors.errorColor
+                      : AppColors.successColor,
+                ),
+              ),
             SizedBox(height: 32),
             TextField(
               controller: _linkController,
