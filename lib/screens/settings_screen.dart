@@ -215,7 +215,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                           SizedBox(height: 12),
                           Text(
-                            'ID do relacionamento (compartilhe com seu par):',
+                            'ID do relacionamento (compartilhe com seu par e anote este ID - evite perdas):',
                           ),
                           SizedBox(height: 6),
                           GestureDetector(

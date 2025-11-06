@@ -6,12 +6,12 @@ App pensado para fortalecer conexões entre pares.
 Resumo rápido das funcionalidades principais — veja a seção [Funcionalidades](#funcionalidades) para a descrição completa.
 
 ## Status
-Em desenvolvimento — funcionalidades serão aprimoradas e novas serão adicionadas.
+Versão final — funcionalidades ainda poderão ser aprimoradas ou novas serão adicionadas.
 
 ## Funcionalidades
 - Contador de tempo de relacionamento;
 - Chat simples para mensagens (sem notificações);
-- Contadores de abraços e beijos;
+- Contadores de abraços e beijos (sendo possível adicionar mais contadores);
 - Distância entre usuários (compartilhamento de localização para cálculo de distância, requer permissão de localização);
 - Linha do tempo para eventos importantes;
 - Formulário de Linguagem do Amor para conhecer melhor o parceiro/parceira;
