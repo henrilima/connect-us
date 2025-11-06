@@ -83,7 +83,7 @@ class _SpotifyCardState extends State<SpotifyCard> {
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 20,
-                          color: Colors.white,
+                          color: AppColors.textColor,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -102,7 +102,7 @@ class _SpotifyCardState extends State<SpotifyCard> {
                                   : 'Artista desconhecido',
                               style: const TextStyle(
                                 fontSize: 16,
-                                color: Colors.white,
+                                color: AppColors.textColor,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -111,7 +111,7 @@ class _SpotifyCardState extends State<SpotifyCard> {
                           IconButton(
                             icon: const Icon(
                               Icons.open_in_new_rounded,
-                              color: Colors.white,
+                              color: AppColors.textColor,
                               size: 26,
                             ),
                             onPressed: () => _openMusicLink(track['id']),
@@ -172,7 +172,7 @@ class _SpotifyCardState extends State<SpotifyCard> {
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 20,
-                                color: Colors.white,
+                                color: AppColors.textColor,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -187,7 +187,7 @@ class _SpotifyCardState extends State<SpotifyCard> {
                                   : 'Artista desconhecido',
                               style: const TextStyle(
                                 fontSize: 16,
-                                color: Colors.white,
+                                color: AppColors.textColor,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -199,7 +199,7 @@ class _SpotifyCardState extends State<SpotifyCard> {
                         'Lançada em ${DateFormat('dd MMM y').format(DateTime(releasedDate[0], releasedDate[1], releasedDate[2]))}',
                         style: TextStyle(
                           fontSize: 10,
-                          color: Colors.white.withAlpha(100),
+                          color: AppColors.textColor.withAlpha(100),
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -209,7 +209,7 @@ class _SpotifyCardState extends State<SpotifyCard> {
                   IconButton(
                     icon: const Icon(
                       Icons.open_in_new_rounded,
-                      color: Colors.white,
+                      color: AppColors.textColor,
                       size: 26,
                     ),
                     onPressed: () => _openMusicLink(track['id']),

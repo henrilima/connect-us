@@ -155,7 +155,7 @@ class _SpotifyFormState extends State<SpotifyForm> {
                     onPressed: () => _submitForm(delete: true),
                     child: Text(
                       "Remover dedicação",
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: AppColors.textColor),
                     ),
                   ),
                 ElevatedButton(
@@ -165,7 +165,7 @@ class _SpotifyFormState extends State<SpotifyForm> {
                     ),
                   ),
                   onPressed: () => _submitForm(),
-                  child: Text("Dedicar", style: TextStyle(color: Colors.white)),
+                  child: Text("Dedicar", style: TextStyle(color: AppColors.textColor)),
                 ),
               ],
             ),

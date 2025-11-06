@@ -234,7 +234,7 @@ class IconPicker extends StatelessWidget {
         final entry = entries[index];
         return IconButton(
           iconSize: 30,
-          icon: FaIcon(entry.value, color: Colors.white),
+          icon: FaIcon(entry.value, color: AppColors.textColor),
           onPressed: () => onSelected(entry.key),
         );
       },

@@ -135,6 +135,7 @@ class _EventFormState extends State<EventForm> {
             TextFormField(
               readOnly: true,
               controller: _dateController,
+              onTap: () => _selectDate(context),
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Data do evento',
