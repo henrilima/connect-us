@@ -27,7 +27,9 @@ class _SpotifyFormState extends State<SpotifyForm> {
 
   void _submitForm({bool delete = false}) async {
     if (_linkController.text.isEmpty) {
-      _showMessage(message: "error:Você precisa inserir um link de uma música do spotify.");
+      _showMessage(
+        message: "error:Você precisa inserir um link de uma música do spotify.",
+      );
       return;
     }
 
@@ -127,7 +129,7 @@ class _SpotifyFormState extends State<SpotifyForm> {
               controller: _linkController,
               decoration: InputDecoration(
                 border: OutlineInputBorder(),
-                labelText: "Link da música (SPOTIFY)",
+                labelText: "Link da música (Spotify)",
               ),
             ),
             SizedBox(height: 12),
