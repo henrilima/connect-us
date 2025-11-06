@@ -102,6 +102,13 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
+    final years = relationshipDate!['years'] as int;
+    final months = relationshipDate!['months'] as int;
+    final days = relationshipDate!['days'] as int;
+    final hours = relationshipDate!['hours'] as int;
+    final minutes = relationshipDate!['minutes'] as int;
+    final seconds = relationshipDate!['seconds'] as int;
+
     return HomeScreenScaffold(
       widget.setPage,
       child: SizedBox(
@@ -140,9 +147,8 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (relationshipDate!['years'] as int > 0)
-                    _timeColumn('Anos', relationshipDate!['years']),
-                  if (relationshipDate!['years'] as int > 0)
+                  if (years > 0) _timeColumn(years > 1 ? 'Anos' : 'Ano', years),
+                  if (years > 0)
                     const Text(
                       ":",
                       style: TextStyle(
@@ -150,23 +156,23 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  _timeColumn('Mês(es)', relationshipDate!['months']),
+                  _timeColumn(months > 1 ? 'Meses' : 'Mês', months),
                   const Text(
                     ":",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  _timeColumn('Dia(s)', relationshipDate!['days']),
+                  _timeColumn(days > 1 ? 'Dias' : 'Dia', days),
                   const Text(
                     ":",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  _timeColumn('Hora(s)', relationshipDate!['hours']),
+                  _timeColumn(hours > 1 ? 'Horas' : 'Hora', hours),
                   const Text(
                     ":",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  _timeColumn('Minuto(s)', relationshipDate!['minutes']),
-                  if (relationshipDate!['years'] as int <= 0)
+                  _timeColumn(minutes > 1 ? 'Minutos' : 'Minuto', minutes),
+                  if (years < 1)
                     const Text(
                       ":",
                       style: TextStyle(
@@ -174,8 +180,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  if (relationshipDate!['years'] as int <= 0)
-                    _timeColumn('Segundos', relationshipDate!['seconds']),
+                  if (years < 1)
+                    _timeColumn(
+                      seconds > 1 || seconds < 1 ? 'Segundos' : 'Segundo',
+                      seconds,
+                    ),
                 ],
               ),
             ],
