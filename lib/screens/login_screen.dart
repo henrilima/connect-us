@@ -1,5 +1,7 @@
+import 'package:connect/forms/register_form.dart';
 import 'package:connect/services/database_service.dart';
 import 'package:connect/provider/auth_provider.dart';
+import 'package:connect/utils/dialoguer.dart';
 import 'package:connect/utils/messenger.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,8 +14,71 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController userController = TextEditingController();
-  final TextEditingController idController = TextEditingController();
+  final TextEditingController _userIdController = TextEditingController();
+  final TextEditingController _relationshipIdController =
+      TextEditingController();
+
+  _openRegisterFormModal() {
+    Dialoguer.openModalBottomSheet(
+      context: context,
+      form: RegisterForm(_loginUser),
+    );
+  }
+
+  _loginUser(String usernameRef, String idRef, BuildContext context) async {
+  
+    String username = usernameRef.toLowerCase().trim();
+    String id = idRef.toLowerCase().trim();
+
+    if (username.isEmpty || id.isEmpty) {
+      AppMessenger(
+        context,
+        'Por favor, preencha todos os campos.',
+        'error',
+      ).show();
+      return;
+    }
+
+    final hasRelationship = await DatabaseService().relationshipExists(id);
+
+    if (hasRelationship) {
+      var userExists = await DatabaseService().userExists(username);
+
+      if (userExists) {
+        if (!context.mounted) return;
+        AppMessenger(
+          context,
+          'Usuário encontrado, login bem-sucedido!',
+          'success',
+        ).show();
+        await context.read<AuthProvider>().loginUser(username);
+
+        await Future.delayed(Duration(seconds: 5));
+
+        if (!context.mounted) return;
+        AppMessenger(
+          context,
+          'Olá, seja muito bem-vindo(a). No menu "Dados e Perfil" você pode alterar seu nome de usuário e atualizar o dia em que se conheceram.',
+          'info',
+          duration: 12,
+        ).show();
+      } else {
+        if (!context.mounted) return;
+        AppMessenger(
+          context,
+          'Usuário não encontrado, verifique a escrita.',
+          'error',
+        ).show();
+      }
+    } else {
+      if (!context.mounted) return;
+      AppMessenger(
+        context,
+        'ID não encontrado, verifique a escrita.',
+        'error',
+      ).show();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         SizedBox(height: 20),
                         TextField(
-                          controller: userController,
+                          controller: _userIdController,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: 'Nome de Usuário',
@@ -56,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         SizedBox(height: 12),
                         TextField(
-                          controller: idController,
+                          controller: _relationshipIdController,
                           decoration: InputDecoration(
                             border: OutlineInputBorder(),
                             labelText: 'ID',
@@ -66,70 +131,20 @@ class _LoginScreenState extends State<LoginScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () async {
-                              String username = userController.text
-                                  .toLowerCase()
-                                  .trim();
-                              String id = idController.text
-                                  .toLowerCase()
-                                  .trim();
-
-                              if (username.isEmpty || id.isEmpty) {
-                                AppMessenger(
-                                  context,
-                                  'Por favor, preencha todos os campos.',
-                                  'error',
-                                ).show();
-                                return;
-                              }
-
-                              if (username.isNotEmpty && id.isNotEmpty) {
-                                DatabaseService dbService = DatabaseService();
-
-                                var relationship = await dbService
-                                    .relationshipExists(id);
-                                if (!context.mounted) return;
-
-                                if (relationship) {
-                                  AppMessenger(
-                                    context,
-                                    'Relacionamento encontrado, verificando usuário.',
-                                    'success',
-                                  ).show();
-
-                                  var userExists = await dbService.userExists(
-                                    username,
-                                  );
-
-                                  if (userExists) {
-                                    if (!context.mounted) return;
-                                    AppMessenger(
-                                      context,
-                                      'Login bem-sucedido!',
-                                      'success',
-                                    ).show();
-
-                                    await context
-                                        .read<AuthProvider>()
-                                        .loginUser(username);
-                                  } else {
-                                    if (!context.mounted) return;
-                                    AppMessenger(
-                                      context,
-                                      'Usuário não encontrado, verifique a escrita.',
-                                      'error',
-                                    ).show();
-                                  }
-                                } else {
-                                  AppMessenger(
-                                    context,
-                                    'ID não encontrado, verifique a escrita.',
-                                    'error',
-                                  ).show();
-                                }
-                              }
-                            },
+                            onPressed: () => _loginUser(
+                              _userIdController.text,
+                              _relationshipIdController.text,
+                              context,
+                            ),
                             child: Text('Conectar'),
+                          ),
+                        ),
+                        SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: TextButton(
+                            onPressed: () => _openRegisterFormModal(),
+                            child: Text("Não tem uma perfil? Clique aqui"),
                           ),
                         ),
                       ],

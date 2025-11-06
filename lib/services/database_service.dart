@@ -7,42 +7,46 @@ class DatabaseService {
 
   /// ? CREATE RELATIONSHIP
   Future<String> createRelationship(
-    String authorUsername,
-    String partnerUsername,
+    String authorId,
+    String partnerId,
     String email,
     DateTime relationshipDate,
   ) async {
-    String relationshipId = _generateRelationshipId(
-      authorUsername,
-      partnerUsername,
-    );
+    if (await userExists(authorId)) {
+      return 'error:O ID de usuário que você escolheu já existe.';
+    }
+
+    if (await userExists(partnerId)) {
+      return 'error:O ID de usuário do seu par já existe.';
+    }
+
+    String relationshipId = _generateRelationshipId(authorId, partnerId);
+    
     await databaseReference.child('relationships/$relationshipId').set({
       'relationshipId': relationshipId,
-      'authorId': authorUsername.toLowerCase(),
-      'partnerId': partnerUsername.toLowerCase(),
+      'authorId': authorId.toLowerCase(),
+      'partnerId': partnerId.toLowerCase(),
       'authorEmail': email,
       'counters': {'kissCount': 0, 'hugCount': 0},
       'relationshipDate': relationshipDate.toIso8601String(),
       'createdAt': DateTime.now().toIso8601String(),
     });
 
-    await databaseReference.child('users/${authorUsername.toLowerCase()}').set({
-      'userId': authorUsername.toLowerCase(),
-      'partnerId': partnerUsername.toLowerCase(),
-      'username': authorUsername.toLowerCase(),
+    await databaseReference.child('users/${authorId.toLowerCase()}').set({
+      'userId': authorId.toLowerCase(),
+      'partnerId': partnerId.toLowerCase(),
+      'username': authorId.toLowerCase(),
       'relationshipId': relationshipId,
     });
 
-    await databaseReference
-        .child('users/${partnerUsername.toLowerCase()}')
-        .set({
-          'userId': partnerUsername.toLowerCase(),
-          'partnerId': authorUsername.toLowerCase(),
-          'username': partnerUsername.toLowerCase(),
-          'relationshipId': relationshipId,
-        });
+    await databaseReference.child('users/${partnerId.toLowerCase()}').set({
+      'userId': partnerId.toLowerCase(),
+      'partnerId': authorId.toLowerCase(),
+      'username': partnerId.toLowerCase(),
+      'relationshipId': relationshipId,
+    });
 
-    return relationshipId;
+    return 'id:$relationshipId';
   }
 
   /// ? Delete User
@@ -516,13 +520,10 @@ class DatabaseService {
   }
 
   /// ? Generations, Sorts and Maps
-  String _generateRelationshipId(
-    String authorUsername,
-    String partnerUsername,
-  ) {
+  String _generateRelationshipId(String authorId, String partnerId) {
     final prefix = 'rel-';
-    final a = (authorUsername.hashCode).abs() % 10000;
-    final b = (partnerUsername.hashCode).abs() % 10000;
+    final a = (authorId.hashCode).abs() % 10000;
+    final b = (partnerId.hashCode).abs() % 10000;
     return '$prefix${a.toString().padLeft(4, '0')}${b.toString().padLeft(4, '0')}';
   }
 
