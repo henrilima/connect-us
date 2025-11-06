@@ -29,7 +29,7 @@ class DatabaseService {
     await databaseReference.child('users/${authorUsername.toLowerCase()}').set({
       'userId': authorUsername.toLowerCase(),
       'partnerId': partnerUsername.toLowerCase(),
-      'username': authorUsername,
+      'username': authorUsername.toLowerCase(),
       'relationshipId': relationshipId,
     });
 
@@ -38,7 +38,7 @@ class DatabaseService {
         .set({
           'userId': partnerUsername.toLowerCase(),
           'partnerId': authorUsername.toLowerCase(),
-          'username': partnerUsername,
+          'username': partnerUsername.toLowerCase(),
           'relationshipId': relationshipId,
         });
 
@@ -401,6 +401,16 @@ class DatabaseService {
     }
 
     return <String, dynamic>{};
+  }
+
+  Future<String> getUsername(String id) async {
+    final username = await databaseReference.child('users/$id/username').get();
+
+    if (username.exists) {
+      return username.value as String;
+    }
+
+    return '';
   }
 
   /// ? Streams

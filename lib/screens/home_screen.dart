@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:connect/components/appbar.dart';
 import 'package:connect/components/drawer.dart';
 import 'package:connect/services/database_service.dart';
@@ -18,7 +17,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Map<String, dynamic>? relationshipData;
-  late Timer _timer;
+  Map<String, String>? _usernames;
+  Timer? _timer;
 
   late DateTime userDate;
   Map<String, int>? relationshipDate;
@@ -26,40 +26,79 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    getRelationshipData();
+    _loadRelationshipData();
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer?.cancel();
     super.dispose();
   }
 
-  getRelationshipData() async {
-    final data = await DatabaseService().getRelationshipData(
-      widget.userData['relationshipId'],
-    );
+  Future<void> _loadRelationshipData() async {
+    try {
+      final data = await DatabaseService().getRelationshipData(
+        widget.userData['relationshipId'],
+      );
 
-    setState(() {
-      relationshipData = data;
-      userDate = DateTime.parse(data['relationshipDate']);
-    });
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
-        relationshipDate = getDifferenceDate(
-          DateTime(userDate.year, userDate.month, userDate.day),
-        );
+        relationshipData = data;
+        userDate = DateTime.parse(data['relationshipDate']);
       });
+
+      final testDate = getDifferenceDate(
+        DateTime(userDate.year, userDate.month, userDate.day),
+      );
+
+      Duration duration = testDate['years'] as int > 0
+          ? Duration(minutes: 1)
+          : Duration(seconds: 1);
+
+      _updateRelationshipDate();
+
+      _timer = Timer.periodic(duration, (_) => _updateRelationshipDate());
+
+      await _loadUsernames(data);
+    } catch (e) {
+      debugPrint("Erro ao carregar dados do relacionamento: $e");
+    }
+  }
+
+  void _updateRelationshipDate() {
+    if (!mounted) return;
+    setState(() {
+      relationshipDate = getDifferenceDate(
+        DateTime(userDate.year, userDate.month, userDate.day),
+      );
     });
+  }
+
+  Future<void> _loadUsernames(Map<String, dynamic> data) async {
+    try {
+      final authorUsername = await DatabaseService().getUsername(
+        data['authorId'],
+      );
+      final partnerUsername = await DatabaseService().getUsername(
+        data['partnerId'],
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _usernames = {'author': authorUsername, 'partner': partnerUsername};
+      });
+    } catch (e) {
+      debugPrint("Erro ao carregar usernames: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (relationshipData == null || relationshipDate == null) {
+    if (relationshipData == null ||
+        relationshipDate == null ||
+        _usernames == null) {
       return HomeScreenScaffold(
         widget.setPage,
-        child: Center(child: CircularProgressIndicator()),
+        child: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -74,93 +113,86 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Text.rich(
                 TextSpan(
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                   children: [
                     TextSpan(
-                      text: relationshipData!["authorId"],
+                      text: _usernames!['author'],
                       style: TextStyle(color: AppColors.primaryColorHover),
                     ),
-                    TextSpan(text: ' e '),
+                    const TextSpan(text: ' e '),
                     TextSpan(
-                      text: relationshipData!["partnerId"],
+                      text: _usernames!['partner'],
                       style: TextStyle(color: AppColors.primaryColorHover),
                     ),
                   ],
                 ),
                 textAlign: TextAlign.center,
               ),
-              Text("se conhecem há", style: TextStyle(fontSize: 18)),
-              SizedBox(height: 12),
+              const SizedBox(height: 4),
+              const Text("se conhecem há", style: TextStyle(fontSize: 18)),
+              const SizedBox(height: 12),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 12,
                 children: [
-                  Column(
-                    children: [
-                      Text(
-                        '${relationshipDate!['days']}',
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  if (relationshipDate!['years'] as int > 0)
+                    _timeColumn('Anos', relationshipDate!['years']),
+                  if (relationshipDate!['years'] as int > 0)
+                    const Text(
+                      ":",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text('Dias', style: TextStyle(height: 0.1)),
-                    ],
-                  ),
-                  Text(
+                    ),
+                  _timeColumn('Meses', relationshipDate!['months']),
+                  const Text(
                     ":",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  Column(
-                    children: [
-                      Text(
-                        '${relationshipDate!['hours']}',
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text('Horas', style: TextStyle(height: 0.1)),
-                    ],
-                  ),
-                  Text(
+                  _timeColumn('Dias', relationshipDate!['days']),
+                  const Text(
                     ":",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  Column(
-                    children: [
-                      Text(
-                        '${relationshipDate!['minutes']}',
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text('Minutos', style: TextStyle(height: 0.1)),
-                    ],
-                  ),
-                  Text(
+                  _timeColumn('Horas', relationshipDate!['hours']),
+                  const Text(
                     ":",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  Column(
-                    children: [
-                      Text(
-                        '${relationshipDate!['seconds']}',
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  _timeColumn('Minutos', relationshipDate!['minutes']),
+                  if (relationshipDate!['years'] as int <= 0)
+                    const Text(
+                      ":",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text('Segundos', style: TextStyle(height: 0.1)),
-                    ],
-                  ),
+                    ),
+                  if (relationshipDate!['years'] as int <= 0)
+                    _timeColumn('Segundos', relationshipDate!['seconds']),
                 ],
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _timeColumn(String label, int? value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
+      child: Column(
+        children: [
+          Text(
+            value?.toString() ?? '--',
+            style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+          ),
+          Text(label, style: const TextStyle(height: 0.1)),
+        ],
       ),
     );
   }
@@ -176,7 +208,7 @@ class HomeScreenScaffold extends StatelessWidget {
     return Scaffold(
       appBar: AppBarComponent("Nos Conecte"),
       drawer: DrawerComponent(setPage),
-      body: Padding(padding: EdgeInsets.all(16), child: child),
+      body: Padding(padding: const EdgeInsets.all(16), child: child),
     );
   }
 }

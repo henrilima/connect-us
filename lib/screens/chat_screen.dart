@@ -19,8 +19,7 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   late Function setPage;
-  late Map<String, dynamic> userData;
-  bool isLoading = true;
+  Map<String, String>? _usernames;
 
   TextEditingController messageController = TextEditingController();
 
@@ -28,15 +27,31 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     setPage = widget.setPage;
-    userData = widget.userData;
+    _loadUsernames();
+  }
+
+  Future<void> _loadUsernames() async {
+    final authorUsername = await DatabaseService().getUsername(
+      widget.userData['userId'],
+    );
+    final partnerUsername = await DatabaseService().getUsername(
+      widget.userData['partnerId'],
+    );
+
+    setState(() {
+      _usernames = {'author': authorUsername, 'partner': partnerUsername};
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: DatabaseService().getMessagesStream(userData['relationshipId']),
+      stream: DatabaseService().getMessagesStream(
+        widget.userData['relationshipId'],
+      ),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting ||
+            _usernames == null) {
           return Loading();
         }
 
@@ -46,7 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
         final Map<String, dynamic> messages = snapshot.data ?? {};
         Alignment getAlignment(String author) {
-          if (author == userData['userId']) {
+          if (author == widget.userData['userId']) {
             return Alignment.centerRight;
           } else {
             return Alignment.centerLeft;
@@ -54,7 +69,7 @@ class _ChatScreenState extends State<ChatScreen> {
         }
 
         return Scaffold(
-          appBar: AppBarComponent("${userData['partnerId']}"),
+          appBar: AppBarComponent("${_usernames!['partner']}"),
           drawer: DrawerComponent(setPage),
           body: SafeArea(
             child: Column(
@@ -127,8 +142,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
                             try {
                               await DatabaseService().sendMessageInChat(
-                                relationshipId: userData['relationshipId'],
-                                author: userData['userId'],
+                                relationshipId:
+                                    widget.userData['relationshipId'],
+                                author: widget.userData['userId'],
                                 message: messageController.text,
                               );
                               messageController.text = "";

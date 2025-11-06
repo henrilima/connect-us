@@ -17,6 +17,7 @@ class LocationScreen extends StatefulWidget {
 }
 
 class _LocationScreenState extends State<LocationScreen> {
+  Map<String, String>? _usernames;
   String? distance;
   bool _hasPermission = false;
   bool _isLoading = true;
@@ -25,6 +26,20 @@ class _LocationScreenState extends State<LocationScreen> {
   void initState() {
     super.initState();
     updateLocation();
+    _loadUsernames();
+  }
+
+  Future<void> _loadUsernames() async {
+    final authorUsername = await DatabaseService().getUsername(
+      widget.userData['userId'],
+    );
+    final partnerUsername = await DatabaseService().getUsername(
+      widget.userData['partnerId'],
+    );
+
+    setState(() {
+      _usernames = {'author': authorUsername, 'partner': partnerUsername};
+    });
   }
 
   Future<void> updateLocation() async {
@@ -66,7 +81,7 @@ class _LocationScreenState extends State<LocationScreen> {
         ],
       ),
       drawer: DrawerComponent(widget.setPage),
-      body: _isLoading
+      body: _isLoading || _usernames == null
           ? Center(child: CircularProgressIndicator())
           : distance == null || !_hasPermission
           ? Column(
@@ -102,14 +117,14 @@ class _LocationScreenState extends State<LocationScreen> {
                         ),
                         children: [
                           TextSpan(
-                            text: '${widget.userData['userId']}',
+                            text: '${_usernames!['author']}',
                             style: TextStyle(
                               color: AppColors.primaryColorHover,
                             ),
                           ),
                           TextSpan(text: ', você e '),
                           TextSpan(
-                            text: '${widget.userData['partnerId']}',
+                            text: '${_usernames!['partner']}',
                             style: TextStyle(
                               color: AppColors.primaryColorHover,
                             ),

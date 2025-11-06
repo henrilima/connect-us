@@ -1,15 +1,15 @@
 import 'package:connect/components/appbar.dart';
 import 'package:connect/components/drawer.dart';
-import 'package:connect/data/love_language_data.dart'; // Mantido
+import 'package:connect/data/love_language_data.dart';
 import 'package:connect/forms/love_language_quiz.dart';
 import 'package:connect/services/database_service.dart';
 import 'package:connect/theme/app_color.dart';
-import 'package:connect/utils/dialoguer.dart'; // Mantido
+import 'package:connect/utils/dialoguer.dart';
 import 'package:connect/widgets/error_screen.dart';
-import 'package:connect/widgets/language_card.dart'; // Mantido
+import 'package:connect/widgets/language_card.dart';
 import 'package:connect/widgets/loading_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Mantido
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:rxdart/rxdart.dart';
 
 class LoveLanguageScreen extends StatefulWidget {
@@ -22,6 +22,7 @@ class LoveLanguageScreen extends StatefulWidget {
 }
 
 class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
+  Map<String, String>? _usernames;
   bool _isFirstLoad = true;
 
   bool _isComplete(
@@ -68,12 +69,32 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadUsernames();
+  }
+
+  Future<void> _loadUsernames() async {
+    final authorUsername = await DatabaseService().getUsername(
+      widget.userData['userId'],
+    );
+    final partnerUsername = await DatabaseService().getUsername(
+      widget.userData['partnerId'],
+    );
+
+    setState(() {
+      _usernames = {'author': authorUsername, 'partner': partnerUsername};
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder<Map<String, Map<String, String>?>>(
       stream: _combinedLoveLanguages(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting ||
-            _isFirstLoad) {
+            _isFirstLoad ||
+            _usernames == null) {
           if (snapshot.hasData) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
@@ -81,7 +102,7 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
               }
             });
           }
-          if (_isFirstLoad) return const Loading();
+          if (_isFirstLoad || _usernames == null) return const Loading();
         }
 
         if (snapshot.hasError) {
@@ -93,7 +114,6 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
         final partnerLovel = data['partner'];
 
         if (_isComplete(userLovel, partnerLovel)) {
-          // Chamando a nova função para dados completos
           return _completeData(userLovel!, partnerLovel!);
         } else {
           return _notCompleteData(userLovel, partnerLovel);
@@ -102,14 +122,12 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
     );
   }
 
-  // Novo método para dados completos (antigo LoveLanguageComponent)
   Widget _completeData(
     Map<String, String> userLovel,
     Map<String, String> partnerLovel,
   ) {
-    // Adicionando uma Key para garantir a reatividade na transição.
     return Scaffold(
-      key: const ValueKey('LoveLanguageResults'), // CHAVE DE REATIVIDADE
+      key: const ValueKey('LoveLanguageResults'),
       appBar: AppBarComponent(
         '',
         actions: [
@@ -134,8 +152,7 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
                   ),
                 ),
                 contentWidget: Column(
-                  mainAxisSize:
-                      MainAxisSize.min, // ESSENCIAL PARA O TAMANHO DO MODAL
+                  mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -166,7 +183,6 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
           ),
           IconButton(
             onPressed: () {
-              // Navegar para o quiz (rota separada, conforme solicitado)
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => LoveLanguageQuiz(
@@ -186,7 +202,6 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
     );
   }
 
-  // Widget auxiliar para construir o corpo de _completeData
   Widget _buildCompleteBody(
     Map<String, String> partnerLovel,
     Map<String, String> userLovel,
@@ -216,7 +231,7 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
                     text: "As melhores maneiras de demonstrar carinho para ",
                   ),
                   TextSpan(
-                    text: widget.userData['partnerId'],
+                    text: _usernames!['partner'],
                     style: const TextStyle(color: AppColors.primaryColorHover),
                   ),
                   const TextSpan(text: ":"),
@@ -306,14 +321,12 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
     );
   }
 
-  // Método original para dados incompletos
   Widget _notCompleteData(
     Map<String, String>? userLovel,
     Map<String, String>? partnerLovel,
   ) {
-    // Adicionando uma Key para garantir a reatividade na transição.
     return Scaffold(
-      key: const ValueKey('LoveLanguageForm'), // CHAVE DE REATIVIDADE
+      key: const ValueKey('LoveLanguageForm'),
       appBar: AppBarComponent('Linguagem do Amor'),
       drawer: DrawerComponent(widget.setPage),
       body: SizedBox(
