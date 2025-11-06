@@ -1,4 +1,3 @@
-import 'package:connect/services/database_service.dart';
 import 'package:connect/theme/app_color.dart';
 import 'package:connect/utils/validator.dart';
 import 'package:flutter/material.dart';
@@ -6,8 +5,16 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
 class RegisterForm extends StatefulWidget {
-  final Function(String, String, BuildContext) loginUser;
-  const RegisterForm(this.loginUser, {super.key});
+  final void Function(
+    BuildContext ctx, {
+    required TextEditingController emailController,
+    required TextEditingController authorIdController,
+    required TextEditingController partnerIdController,
+    required DateTime selectedDate,
+    required Function({String? message, bool? clear}) showMessage,
+  })
+  registerRelationship;
+  const RegisterForm(this.registerRelationship, {super.key});
 
   @override
   State<RegisterForm> createState() => _RegisterFormState();
@@ -45,63 +52,6 @@ class _RegisterFormState extends State<RegisterForm> {
           'dd/MM/yyyy',
         ).format(picked);
       });
-    }
-  }
-
-  _registerRelationship(ctx) async {
-    if (_emailController.text.isEmpty || !isValidEmail(_emailController.text)) {
-      return _showMessage(message: "error:O e-mail inserido não é válido.");
-    }
-
-    if (_authorIdController.text.isEmpty ||
-        !isValidUserId(_authorIdController.text)) {
-      return _showMessage(
-        message: "error:${validateUserId(_authorIdController.text, "seu ID")}",
-      );
-    }
-
-    if (_partnerIdController.text.isEmpty ||
-        !isValidUserId(_partnerIdController.text)) {
-      return _showMessage(
-        message:
-            "error:${validateUserId(_partnerIdController.text, "ID do seu par")}",
-      );
-    }
-
-    if (_authorIdController.text.toLowerCase() ==
-        _partnerIdController.text.toLowerCase()) {
-      return _showMessage(
-        message: "error:O seu ID e o ID do seu par não podem ser iguais.",
-      );
-    }
-
-    if (_selectedDate == null) {
-      return _showMessage(
-        message:
-            "error:A data em que você e seu par se conheceram não pode ser vazia.",
-      );
-    }
-
-    final String email = _emailController.text;
-    final String authorId = _authorIdController.text;
-    final String partnerId = _partnerIdController.text;
-    final DateTime relationshipDate = _selectedDate!;
-
-    _showMessage(clear: true);
-    final relationshipResponse = await DatabaseService().createRelationship(
-      authorId,
-      partnerId,
-      email,
-      relationshipDate,
-    );
-
-    final partedResponse = relationshipResponse.split(':');
-
-    if (partedResponse[0] == 'error') {
-      return _showMessage(message: "error:${partedResponse[1]}");
-    } else if (partedResponse[0] == 'id') {
-      Navigator.of(ctx).pop();
-      widget.loginUser(authorId, partedResponse[1], ctx);
     }
   }
 
@@ -225,7 +175,26 @@ class _RegisterFormState extends State<RegisterForm> {
                     AppColors.primaryColor,
                   ),
                 ),
-                onPressed: () => _registerRelationship(context),
+                onPressed: () {
+                  if (_selectedDate == null) {
+                    _showMessage(
+                      message:
+                          "error:Selecione a data de quando se conheceram.",
+                    );
+                    return;
+                  } else {
+                    _showMessage(clear: true);
+                  }
+
+                  widget.registerRelationship(
+                    context,
+                    emailController: _emailController,
+                    authorIdController: _authorIdController,
+                    partnerIdController: _partnerIdController,
+                    selectedDate: _selectedDate!,
+                    showMessage: _showMessage,
+                  );
+                },
                 child: Text(
                   "Criar Perfil",
                   style: TextStyle(color: AppColors.textColor),

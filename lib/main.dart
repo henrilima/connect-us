@@ -14,13 +14,6 @@ Future<void> main() async {
   await initializeDateFormatting('pt_BR', null);
   Intl.defaultLocale = 'pt_BR';
 
-  // await DatabaseService().createRelationship(
-  //   'henrilima',
-  //   'thiagopr',
-  //   'henrilima.contactme@gmail.com',
-  //   DateTime(2025, 8, 25),
-  // );
-
   runApp(
     ChangeNotifierProvider(
       create: (context) => AuthProvider(),

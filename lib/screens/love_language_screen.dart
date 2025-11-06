@@ -23,7 +23,6 @@ class LoveLanguageScreen extends StatefulWidget {
 
 class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
   Map<String, String>? _usernames;
-  bool _isFirstLoad = true;
 
   bool _isComplete(
     Map<String, String>? userLovel,
@@ -37,35 +36,6 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
 
   bool _hasUserData(Map<String, String>? userLovel) {
     return userLovel != null && userLovel.isNotEmpty;
-  }
-
-  String _getMainText(
-    Map<String, String>? userLovel,
-    Map<String, String>? partnerLovel,
-  ) {
-    if (userLovel == null || userLovel.isEmpty) {
-      if (partnerLovel != null && partnerLovel.isNotEmpty) {
-        return "O seu par já respondeu ao questionário, só falta você, hein! Responda agora:";
-      }
-      return "Responda ao questionário para descobrir como você prefere receber e demonstrar afeto. Esses resultados ficarão disponíveis para o seu par quando ambos responderem.";
-    } else if (partnerLovel == null || partnerLovel.isEmpty) {
-      return "O seu resultado nós já sabemos. Agora incentive seu par a descobrir a linguagem do amor dele.";
-    }
-    return "";
-  }
-
-  Stream<Map<String, Map<String, String>?>> _combinedLoveLanguages() {
-    final Stream<Map<String, String>> streamUser = DatabaseService()
-        .streamUserLoveLanguages(widget.userData['userId']);
-    final Stream<Map<String, String>> streamPartner = DatabaseService()
-        .streamUserLoveLanguages(widget.userData['partnerId']);
-
-    return Rx.combineLatest2(streamUser, streamPartner, (
-      userLovel,
-      partnerLovel,
-    ) {
-      return {'user': userLovel, 'partner': partnerLovel};
-    });
   }
 
   @override
@@ -87,22 +57,48 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
     });
   }
 
+  String _resolveMainText(
+    Map<String, String>? userLovel,
+    Map<String, String>? partnerLovel,
+  ) {
+    if (userLovel == null || userLovel.isEmpty) {
+      if (partnerLovel != null && partnerLovel.isNotEmpty) {
+        return "O seu par já respondeu ao questionário, só falta você, hein! Responda agora:";
+      }
+      return "Responda ao questionário para descobrir como você prefere receber e demonstrar afeto. Esses resultados ficarão disponíveis para o seu par quando ambos responderem.";
+    } else if (userLovel.isNotEmpty &&
+        (partnerLovel == null || partnerLovel.isEmpty)) {
+      return "O seu resultado nós já sabemos. Agora incentive seu par a descobrir a linguagem do amor dele.";
+    }
+    return "Tudo pronto! Vocês já descobriram as linguagens do amor.";
+  }
+
+  Stream<Map<String, Map<String, String>?>> _combinedLoveLanguages() {
+    final streamUser = DatabaseService().streamUserLoveLanguages(
+      widget.userData['userId'],
+    );
+    final streamPartner = DatabaseService().streamUserLoveLanguages(
+      widget.userData['partnerId'],
+    );
+
+    return Rx.combineLatest2<
+      Map<String, String>?,
+      Map<String, String>?,
+      Map<String, Map<String, String>?>
+    >(
+      streamUser,
+      streamPartner,
+      (user, partner) => {'user': user, 'partner': partner},
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<Map<String, Map<String, String>?>>(
       stream: _combinedLoveLanguages(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting ||
-            _isFirstLoad ||
-            _usernames == null) {
-          if (snapshot.hasData) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                setState(() => _isFirstLoad = false);
-              }
-            });
-          }
-          if (_isFirstLoad || _usernames == null) return const Loading();
+        if (!snapshot.hasData || _usernames == null) {
+          return const Loading();
         }
 
         if (snapshot.hasError) {
@@ -325,6 +321,8 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
     Map<String, String>? userLovel,
     Map<String, String>? partnerLovel,
   ) {
+    final mainText = _resolveMainText(userLovel, partnerLovel);
+
     return Scaffold(
       key: const ValueKey('LoveLanguageForm'),
       appBar: AppBarComponent('Linguagem do Amor'),
@@ -355,7 +353,7 @@ class _LoveLanguageScreenState extends State<LoveLanguageScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _getMainText(userLovel, partnerLovel),
+                    mainText,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 18,
