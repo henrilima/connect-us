@@ -35,7 +35,7 @@ class _SpotifyCardState extends State<SpotifyCard> {
     final imageUrl =
         track['album']?['images'] != null &&
             (track['album']['images'] as List).isNotEmpty
-        ? track['album']['images'][0]
+        ? track['album']['images'][1]
         : 'https://via.placeholder.com/80';
 
     final List<int> releasedDate = [];

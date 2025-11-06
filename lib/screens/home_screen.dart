@@ -132,8 +132,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
-              const Text("se conhecem há", style: TextStyle(fontSize: 18)),
-              const SizedBox(height: 12),
+              const Text(
+                "se conhecem há",
+                style: TextStyle(fontSize: 16, height: 0.8),
+              ),
+              const SizedBox(height: 18),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -147,22 +150,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  _timeColumn('Meses', relationshipDate!['months']),
+                  _timeColumn('Mês(es)', relationshipDate!['months']),
                   const Text(
                     ":",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  _timeColumn('Dias', relationshipDate!['days']),
+                  _timeColumn('Dia(s)', relationshipDate!['days']),
                   const Text(
                     ":",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  _timeColumn('Horas', relationshipDate!['hours']),
+                  _timeColumn('Hora(s)', relationshipDate!['hours']),
                   const Text(
                     ":",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  _timeColumn('Minutos', relationshipDate!['minutes']),
+                  _timeColumn('Minuto(s)', relationshipDate!['minutes']),
                   if (relationshipDate!['years'] as int <= 0)
                     const Text(
                       ":",
@@ -184,14 +187,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _timeColumn(String label, int? value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         children: [
           Text(
             value?.toString() ?? '--',
-            style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 42, fontWeight: FontWeight.bold),
           ),
-          Text(label, style: const TextStyle(height: 0.1)),
+          Text(label, style: const TextStyle(height: 0.1, fontSize: 10)),
         ],
       ),
     );
