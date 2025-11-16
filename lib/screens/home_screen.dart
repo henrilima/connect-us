@@ -140,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 4),
               const Text(
-                "se conhecem há",
+                "estão juntos há",
                 style: TextStyle(fontSize: 16, height: 0.8),
               ),
               const SizedBox(height: 18),
