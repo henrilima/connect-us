@@ -1,8 +1,8 @@
 abstract class SpotifyCredentials {
-  static String clientId = '// spotify client ID';
-  static String clientSecret = '// spotify Secret Client';
+  static String clientId = '// ID do cliente Spotify';
+  static String clientSecret = '// Segredo do cliente Spotify';
 }
 
 abstract class Credentials {
-  static String storageKey = '// key';
+  static String storageKey = '// chave';
 }

@@ -6,16 +6,22 @@ App pensado para fortalecer conexões entre pares.
 Resumo rápido das funcionalidades principais — veja a seção [Funcionalidades](#funcionalidades) para a descrição completa.
 
 ## Status
-Versão final — funcionalidades ainda poderão ser aprimoradas ou novas serão adicionadas.
+Versão 2.0 — Atualização principal com novos recursos de interação e gamificação.
 
 ## Funcionalidades
-- Contador de tempo de relacionamento;
-- Chat simples para mensagens (sem notificações);
-- Contadores de abraços e beijos (sendo possível adicionar mais contadores);
-- Distância entre usuários (compartilhamento de localização para cálculo de distância, requer permissão de localização);
-- Linha do tempo para eventos importantes;
-- Formulário de Linguagem do Amor para conhecer melhor o parceiro/parceira;
-- Dedicação de músicas (com notas) utilizando links do Spotify.
+- **Contador de tempo**: Visualize há quanto tempo estão juntos;
+- **Chat**: Mensagens em tempo real para o casal;
+- **Contadores**: Registre abraços, beijos e crie contadores personalizados;
+- **Localização**: Veja a distância entre vocês (requer permissão);
+- **Linha do Tempo**: Registre eventos importantes da história do casal;
+- **Linguagem do Amor**: Descubra a linguagem do amor do seu parceiro(a);
+- **Spotify**: Dedique músicas e compartilhe o que está ouvindo;
+- **Surpresas**: Agende mensagens especiais para serem reveladas no futuro;
+- **Fotos Diárias**: Compartilhe uma foto do seu dia (estilo BeReal);
+- **Sentimentos**: Registre como está se sentindo e acompanhe o humor do parceiro;
+- **Momentos**: Lista de desejos/tarefas para realizarem juntos;
+- **Conquistas**: Desbloqueie conquistas conforme utilizam o app;
+- **Pedra, Papel e Tesoura**: Joguinho rápido para tomar decisões.
 
 
 ## Como contribuir

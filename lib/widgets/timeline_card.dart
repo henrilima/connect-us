@@ -1,6 +1,7 @@
 import 'package:connect/forms/event_form.dart';
 import 'package:connect/services/database_service.dart';
-import 'package:connect/theme/app_color.dart';
+import 'package:connect/ui/app_color.dart';
+import 'package:connect/utils/dates.dart';
 import 'package:connect/utils/dialoguer.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -97,9 +98,7 @@ class _TimelineCardState extends State<TimelineCard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              DateFormat(
-                                "dd 'de' MMMM 'de' y",
-                              ).format(dateTime),
+                              "${DateFormat("dd 'de' MMMM 'de' y").format(dateTime)} (há ${getDateInDays(dateTime)} dias)",
                               style: const TextStyle(
                                 fontSize: 12,
                                 height: 1,

@@ -1,8 +1,9 @@
 import 'package:connect/forms/register_form.dart';
+import 'package:connect/ui/app_color.dart';
 import 'package:connect/services/database_service.dart';
 import 'package:connect/provider/auth_provider.dart';
 import 'package:connect/utils/dialoguer.dart';
-import 'package:connect/utils/messenger.dart';
+import 'package:connect/services/messenger_service.dart';
 import 'package:connect/utils/validator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -56,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (!context.mounted) return;
         AppMessenger(
           context,
-          'Olá, seja muito bem-vindo(a). No menu "Dados e Perfil" você pode alterar seu nome de usuário e atualizar o dia em que se conheceram.',
+          'Olá, seja muito bem-vindo(a). Você pode alterar seu nome de usuário e outras coisas no perfil.',
           'info',
           duration: 12,
         ).show();
@@ -139,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.of(ctx).pop();
 
         if (mounted) {
-        await _loginUser(authorId, partedResponse[1], context);
+          await _loginUser(authorId, partedResponse[1], context);
         }
       }
     }
@@ -160,7 +161,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 0.7,
                     child: Image.asset(
-                      'assets/images/cupid.png',
+                      'assets/images/logo.png',
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -171,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Text(
                           "Insira abaixo o seu nome de usuário e o ID do relacionamento:",
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 16,
                             fontWeight: FontWeight.w500,
                           ),
                           textAlign: TextAlign.center,
@@ -179,29 +180,66 @@ class _LoginScreenState extends State<LoginScreen> {
                         SizedBox(height: 20),
                         TextField(
                           controller: _userIdController,
+                          style: const TextStyle(color: AppColors.textColor),
                           decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'Nome de Usuário',
+                            hintText: 'Nome de Usuário',
+                            filled: true,
+                            fillColor: AppColors.drawerBackgroundColor,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.all(16),
+                            prefixIcon: Icon(
+                              Icons.person,
+                              color: AppColors.textColorSecondary,
+                            ),
                           ),
                         ),
                         SizedBox(height: 12),
                         TextField(
                           controller: _relationshipIdController,
+                          style: const TextStyle(color: AppColors.textColor),
                           decoration: InputDecoration(
-                            border: OutlineInputBorder(),
-                            labelText: 'ID',
+                            hintText: 'ID do Relacionamento',
+                            filled: true,
+                            fillColor: AppColors.drawerBackgroundColor,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.all(16),
+                            prefixIcon: Icon(
+                              Icons.favorite,
+                              color: AppColors.textColorSecondary,
+                            ),
                           ),
                         ),
                         SizedBox(height: 20),
                         SizedBox(
                           width: double.infinity,
+                          height: 56,
                           child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 0,
+                            ),
                             onPressed: () => _loginUser(
                               _userIdController.text,
                               _relationshipIdController.text,
                               context,
                             ),
-                            child: Text('Conectar'),
+                            child: const Text(
+                              'Conectar',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
                         SizedBox(height: 24),

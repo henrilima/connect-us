@@ -1,226 +1,134 @@
-import 'dart:async';
-import 'package:connect/components/appbar.dart';
-import 'package:connect/components/drawer.dart';
+import 'package:connect/components/connect_component.dart';
+import 'package:connect/components/floating_bar.dart';
+import 'package:connect/components/header.dart';
+import 'package:connect/components/pages_component.dart';
+import 'package:connect/components/timeout_component.dart';
 import 'package:connect/services/database_service.dart';
-import 'package:connect/theme/app_color.dart';
-import 'package:connect/utils/dates.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
-  final Map<String, dynamic> userData;
   final Function setPage;
+  final Map<String, dynamic> userData;
   const HomeScreen(this.setPage, {super.key, required this.userData});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  Map<String, dynamic>? relationshipData;
-  Map<String, String>? _usernames;
-  Timer? _timer;
-
-  late DateTime userDate;
-  Map<String, int>? relationshipDate;
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  int _selectedIndex = 0;
+  final DatabaseService _databaseService = DatabaseService();
 
   @override
   void initState() {
     super.initState();
-    _loadRelationshipData();
+    WidgetsBinding.instance.addObserver(this);
+    _setStatus(true);
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    _setStatus(false);
     super.dispose();
   }
 
-  Future<void> _loadRelationshipData() async {
-    try {
-      final data = await DatabaseService().getRelationshipData(
-        widget.userData['relationshipId'],
-      );
-
-      setState(() {
-        relationshipData = data;
-        userDate = DateTime.parse(data['relationshipDate']);
-      });
-
-      final testDate = getDifferenceDate(
-        DateTime(userDate.year, userDate.month, userDate.day),
-      );
-
-      Duration duration = testDate['years'] as int > 0
-          ? Duration(minutes: 1)
-          : Duration(seconds: 1);
-
-      _updateRelationshipDate();
-
-      _timer = Timer.periodic(duration, (_) => _updateRelationshipDate());
-
-      await _loadUsernames(data);
-    } catch (e) {
-      debugPrint("Erro ao carregar dados do relacionamento: $e");
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _setStatus(true);
+    } else {
+      _setStatus(false);
     }
   }
 
-  void _updateRelationshipDate() {
-    if (!mounted) return;
-    setState(() {
-      relationshipDate = getDifferenceDate(
-        DateTime(userDate.year, userDate.month, userDate.day),
-      );
-    });
+  void _setStatus(bool isOnline) {
+    if (widget.userData['userId'] != null) {
+      _databaseService.updateUserStatus(widget.userData['userId'], isOnline);
+    }
   }
 
-  Future<void> _loadUsernames(Map<String, dynamic> data) async {
-    try {
-      final authorUsername = await DatabaseService().getUsername(
-        data['authorId'],
+  Widget component(selectedIndex) {
+    if (selectedIndex == 1) {
+      return PagesComponent(widget.setPage, widget.userData);
+    } else if (selectedIndex == 2) {
+      return ConnectComponent(userData: widget.userData);
+    } else {
+      return TimeoutComponent(
+        infos: {
+          "partnerId": widget.userData['partnerId'],
+          "date": widget.userData['relationshipData']['relationshipDate'],
+          "author": widget.userData['username'],
+          "partner": widget.userData['partnerData']['username'],
+          "partnerPhotoUrl": widget.userData['partnerData']['photoUrl'],
+          "relationshipId":
+              widget.userData['relationshipData']['relationshipId'],
+        },
       );
-      final partnerUsername = await DatabaseService().getUsername(
-        data['partnerId'],
-      );
-
-      if (!mounted) return;
-      setState(() {
-        _usernames = {'author': authorUsername, 'partner': partnerUsername};
-      });
-    } catch (e) {
-      debugPrint("Erro ao carregar usernames: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (relationshipData == null ||
-        relationshipDate == null ||
-        _usernames == null) {
-      return HomeScreenScaffold(
-        widget.setPage,
-        child: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    final years = relationshipDate!['years'] as int;
-    final months = relationshipDate!['months'] as int;
-    final days = relationshipDate!['days'] as int;
-    final hours = relationshipDate!['hours'] as int;
-    final minutes = relationshipDate!['minutes'] as int;
-    final seconds = relationshipDate!['seconds'] as int;
-
     return HomeScreenScaffold(
+      true,
       widget.setPage,
-      child: SizedBox(
-        width: double.infinity,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text.rich(
-                TextSpan(
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: _usernames!['author'],
-                      style: TextStyle(color: AppColors.primaryColorHover),
-                    ),
-                    const TextSpan(text: ' e '),
-                    TextSpan(
-                      text: _usernames!['partner'],
-                      style: TextStyle(color: AppColors.primaryColorHover),
-                    ),
-                  ],
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                "estão juntos há",
-                style: TextStyle(fontSize: 16, height: 0.8),
-              ),
-              const SizedBox(height: 18),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (years > 0) _timeColumn(years > 1 ? 'Anos' : 'Ano', years),
-                  if (years > 0)
-                    const Text(
-                      ":",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  _timeColumn(months > 1 ? 'Meses' : 'Mês', months),
-                  const Text(
-                    ":",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  _timeColumn(days > 1 ? 'Dias' : 'Dia', days),
-                  const Text(
-                    ":",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  _timeColumn(hours > 1 ? 'Horas' : 'Hora', hours),
-                  const Text(
-                    ":",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  _timeColumn(minutes > 1 ? 'Minutos' : 'Minuto', minutes),
-                  if (years < 1)
-                    const Text(
-                      ":",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  if (years < 1)
-                    _timeColumn(
-                      seconds > 1 || seconds < 1 ? 'Segundos' : 'Segundo',
-                      seconds,
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _timeColumn(String label, int? value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Column(
-        children: [
-          Text(
-            value?.toString() ?? '--',
-            style: const TextStyle(fontSize: 42, fontWeight: FontWeight.bold),
-          ),
-          Text(label, style: const TextStyle(height: 0.1, fontSize: 10)),
-        ],
-      ),
+      selectedIndex: _selectedIndex,
+      photoUrl: widget.userData['photoUrl'],
+      onTabChanged: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      child: component(_selectedIndex),
     );
   }
 }
 
 class HomeScreenScaffold extends StatelessWidget {
+  final bool loaded;
   final Function setPage;
   final Widget child;
-  const HomeScreenScaffold(this.setPage, {required this.child, super.key});
+  final int selectedIndex;
+  final String? photoUrl;
+  final Function(int) onTabChanged;
+
+  const HomeScreenScaffold(
+    this.loaded,
+    this.setPage, {
+    required this.child,
+    required this.selectedIndex,
+    required this.onTabChanged,
+    this.photoUrl,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarComponent("Nos Conecte"),
-      drawer: DrawerComponent(setPage),
-      body: Padding(padding: const EdgeInsets.all(16), child: child),
+      body: Stack(
+        alignment: AlignmentGeometry.topCenter,
+        children: [
+          if (loaded) CustomHeader(setPage, false, photoUrl: photoUrl),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: child,
+          ),
+
+          Positioned(
+            bottom: 24,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: BottomFloatingBar(
+                setPage,
+                selectedIndex: selectedIndex,
+                onTabChanged: onTabChanged,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

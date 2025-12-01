@@ -1,10 +1,10 @@
-import 'package:connect/components/appbar.dart';
-import 'package:connect/components/drawer.dart';
+import 'package:connect/components/header.dart';
 import 'package:connect/forms/event_form.dart';
 import 'package:connect/services/database_service.dart';
 import 'package:connect/utils/dialoguer.dart';
 import 'package:connect/widgets/error_screen.dart';
-import 'package:connect/widgets/loading_screen.dart';
+import 'package:connect/widgets/fade_in.dart';
+import 'package:connect/widgets/loading_widget.dart';
 import 'package:connect/widgets/timeline_card.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -59,70 +59,92 @@ class _TimelineScreenState extends State<TimelineScreen> {
         final Map<String, dynamic>? relationshipTimeline = snapshot.data;
 
         return Scaffold(
-          appBar: AppBarComponent(
-            "Linha do Tempo",
-            actions: [
-              IconButton(
-                icon: FaIcon(FontAwesomeIcons.plus),
-                tooltip: 'Adicionar evento',
-                onPressed: () => _openTimelineFormModal(),
-              ),
-            ],
-          ),
-          drawer: DrawerComponent(setPage),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: isLoading
-                  ? Center(child: CircularProgressIndicator())
-                  : Column(
-                      children: [
-                        if (relationshipTimeline == null ||
-                            relationshipTimeline.isEmpty)
-                          const Center(
-                            child: Text(
-                              'Não há eventos na linha do tempo ainda.',
-                            ),
-                          )
-                        else if (relationshipTimeline.isNotEmpty)
-                          ...relationshipTimeline.entries.map((entry) {
-                            final el = entry.value;
-                            final title = (el is Map && el['title'] != null)
-                                ? el['title'].toString()
-                                : el.toString();
-                            final description =
-                                (el is Map && el['description'] != null)
-                                ? el['description'].toString()
-                                : el.toString();
-                            final date = (el is Map && el['date'] != null)
-                                ? el['date'].toString()
-                                : '';
-                            return TimelineCard(
-                              title: title,
-                              description: description,
-                              date: date,
-                              eventKey: entry.key,
-                              userData: widget.userData,
-                            );
-                          }),
-                        if (relationshipTimeline != null &&
-                            relationshipTimeline.isNotEmpty)
-                          SizedBox(
-                            width: double.infinity,
-                            child: Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Center(
-                                  child: Text(
-                                    "Não há mais eventos para exibir.",
+          body: SafeArea(
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Column(
+                    children: [
+                      CustomHeader(
+                        setPage,
+                        true,
+                        actions: [
+                          IconButton(
+                            icon: const FaIcon(FontAwesomeIcons.plus),
+                            tooltip: 'Adicionar evento',
+                            onPressed: () => _openTimelineFormModal(),
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                if (relationshipTimeline == null ||
+                                    relationshipTimeline.isEmpty)
+                                  const Center(
+                                    child: Text(
+                                      'Não há eventos na linha do tempo ainda.',
+                                    ),
+                                  )
+                                else if (relationshipTimeline.isNotEmpty)
+                                  ...relationshipTimeline.entries
+                                      .toList()
+                                      .asMap()
+                                      .entries
+                                      .map((entry) {
+                                        final index = entry.key;
+                                        final mapEntry = entry.value;
+                                        final el = mapEntry.value;
+                                        final title =
+                                            (el is Map && el['title'] != null)
+                                            ? el['title'].toString()
+                                            : el.toString();
+                                        final description =
+                                            (el is Map &&
+                                                el['description'] != null)
+                                            ? el['description'].toString()
+                                            : el.toString();
+                                        final date =
+                                            (el is Map && el['date'] != null)
+                                            ? el['date'].toString()
+                                            : '';
+                                        return FadeIn(
+                                          delay: Duration(
+                                            milliseconds: index * 100,
+                                          ),
+                                          child: TimelineCard(
+                                            title: title,
+                                            description: description,
+                                            date: date,
+                                            eventKey: mapEntry.key,
+                                            userData: widget.userData,
+                                          ),
+                                        );
+                                      }),
+                                if (relationshipTimeline != null &&
+                                    relationshipTimeline.isNotEmpty)
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: Card(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Center(
+                                          child: Text(
+                                            "Não há mais eventos para exibir.",
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
+                              ],
                             ),
                           ),
-                      ],
-                    ),
-            ),
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         );
       },

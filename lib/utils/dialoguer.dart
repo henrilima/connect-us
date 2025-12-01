@@ -1,3 +1,4 @@
+import 'package:connect/ui/app_color.dart';
 import 'package:flutter/material.dart';
 
 /// Classe Dialoguer, feita para exibir diálogos simples ou customizados e modais.
@@ -13,8 +14,15 @@ class Dialoguer {
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Text(title),
-          content: Text(content),
+          backgroundColor: AppColors.backgroundColor,
+          title: Text(
+            title,
+            style: const TextStyle(color: AppColors.textColor),
+          ),
+          content: Text(
+            content,
+            style: const TextStyle(color: AppColors.textColorSecondary),
+          ),
           actions: [
             TextButton(
               child: Text(buttonText),
@@ -39,6 +47,7 @@ class Dialoguer {
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
+          backgroundColor: AppColors.backgroundColor,
           title: titleWidget,
           content: contentWidget,
           actions: [
@@ -59,12 +68,13 @@ class Dialoguer {
     required Widget titleWidget,
     required Widget contentWidget,
     required List<Widget> actionsWidget,
-    String buttonText = 'OK',
+    String buttonText = 'Ok',
   }) async {
     final bool? confirm = await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: AppColors.backgroundColor,
           title: titleWidget,
           content: contentWidget,
           actions: actionsWidget,
@@ -78,22 +88,28 @@ class Dialoguer {
   static void openModalBottomSheet({
     required BuildContext context,
     required Widget form,
+    bool customLayout = false,
   }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.backgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) {
-        return SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: form,
-            ),
-          ),
-        );
+        return customLayout
+            ? SafeArea(child: form)
+            : SafeArea(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                    ),
+                    child: form,
+                  ),
+                ),
+              );
       },
     );
   }

@@ -1,14 +1,23 @@
+import 'package:connect/model/user.dart';
 import 'package:connect/screens/chat_screen.dart';
 import 'package:connect/screens/location_screen.dart';
 import 'package:connect/screens/love_language_screen.dart';
+import 'package:connect/screens/rps_screen.dart';
+import 'package:connect/screens/achievements_screen.dart';
 import 'package:connect/screens/settings_screen.dart';
 import 'package:connect/screens/spotify_screen.dart';
+import 'package:connect/screens/surprises_screen.dart';
 import 'package:connect/screens/timeline_screen.dart';
 import 'package:connect/services/database_service.dart';
 import 'package:connect/provider/auth_provider.dart';
 import 'package:connect/screens/home_screen.dart';
 import 'package:connect/screens/counters_screen.dart';
+import 'package:connect/screens/feeling_screen.dart';
+
+import 'package:connect/screens/moments_screen.dart';
+import 'package:connect/screens/daily_photos_screen.dart';
 import 'package:connect/services/location_service.dart';
+import 'package:connect/widgets/loading_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
@@ -38,9 +47,7 @@ class _ScreensManagerState extends State<ScreensManager> {
 
     if (userId != null) {
       try {
-        final Map<String, dynamic> data = await DatabaseService().getUserData(
-          userId,
-        );
+        final Map<String, dynamic> data = await UserModel().getUserData(userId);
 
         if (!mounted) return;
 
@@ -53,6 +60,10 @@ class _ScreensManagerState extends State<ScreensManager> {
 
         setState(() {
           _userData = data;
+        });
+
+        await Future.delayed(const Duration(seconds: 2));
+        setState(() {
           _isLoading = false;
         });
       } catch (e) {
@@ -62,6 +73,7 @@ class _ScreensManagerState extends State<ScreensManager> {
       }
     } else {
       if (!mounted) return;
+      context.read<AuthProvider>().logoutUser();
       setState(() {
         _isLoading = false;
       });
@@ -69,56 +81,45 @@ class _ScreensManagerState extends State<ScreensManager> {
   }
 
   Future<void> _updateUserLocation(String id) async {
-    if (await LocationService().hasPermission()) {
+    if (await LocationService().hasPermission() &&
+        await Geolocator.isLocationServiceEnabled()) {
       final Position position = await LocationService().getCurrentLocation();
       await DatabaseService().updateLocation(id, position);
     }
   }
 
-  String _currentPage = "home";
-  String _lastPage = "home";
-
   Map<String, Widget> get pages => {
-    "home": HomeScreen(setPage, userData: userData),
     "chat": ChatScreen(setPage, userData: userData),
     "counters": CountersScreen(setPage, userData: userData),
     "location": LocationScreen(setPage, userData: userData),
     "timeline": TimelineScreen(setPage, userData: userData),
     "lovelanguage": LoveLanguageScreen(setPage, userData: userData),
+    "rps": RPSScreen(setPage, userData: userData),
+    "achievements": AchievementsScreen(setPage, userData: userData),
+    "surprises": SurprisesScreen(setPage, userData: userData),
     "spotify": SpotifyScreen(setPage, userData: userData),
-    "settings": SettingsScreen(setPage, userId: userData['userId']),
+    "feeling": FeelingScreen(setPage, userData: userData),
+    "moments": MomentsScreen(setPage, userData: userData),
+    "daily_photos": DailyPhotosScreen(setPage, userData: userData),
+    "settings": SettingsScreen(setPage, userData: userData),
   };
 
   void setPage(String newPage) {
     if (pages.containsKey(newPage)) {
-      if (newPage == "settings") {
-        Navigator.of(context).pop();
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => pages[newPage]!));
 
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (context) => pages[newPage]!));
-
-        setState(() {
-          _currentPage = _lastPage;
-        });
-        return;
-      }
-
-      setState(() {
-        _lastPage = _currentPage;
-        _currentPage = newPage;
-      });
+      return;
     }
-    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Loading();
     }
 
-    return pages[_currentPage] ??
-        Scaffold(body: Center(child: Text('Página não encontrada')));
+    return HomeScreen(setPage, userData: userData);
   }
 }

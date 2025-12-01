@@ -1,5 +1,5 @@
 import 'package:connect/services/database_service.dart';
-import 'package:connect/theme/app_color.dart';
+import 'package:connect/ui/app_color.dart';
 import 'package:connect/utils/dialoguer.dart';
 import 'package:flutter/material.dart';
 
@@ -26,7 +26,7 @@ class _SpotifyFormState extends State<SpotifyForm> {
   }
 
   void _submitForm({bool delete = false}) async {
-    if (_linkController.text.isEmpty) {
+    if (!delete && _linkController.text.isEmpty) {
       _showMessage(
         message: "error:Você precisa inserir um link de uma música do spotify.",
       );
@@ -92,84 +92,159 @@ class _SpotifyFormState extends State<SpotifyForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.backgroundColor,
-      elevation: 5,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Melodia do Amor",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primaryColorHover,
-              ),
-            ),
-            Text(
-              "Dedique uma música para o seu par. Insira o link de uma música do Spotify e defina uma nota (opcional).",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
-            SizedBox(height: 12),
-            if (_message.isNotEmpty)
+    return SafeArea(
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
               Text(
-                _message.split(':')[1],
+                "Melodia do Amor",
                 style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: _message.split(':')[0] == 'error'
-                      ? AppColors.errorColor
-                      : AppColors.successColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textColor,
                 ),
               ),
-            SizedBox(height: 32),
-            TextField(
-              controller: _linkController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                labelText: "Link da música (Spotify)",
+              const SizedBox(height: 8),
+              Text(
+                "Dedique uma música para o seu par. Insira o link de uma música do Spotify e defina uma nota (opcional).",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textColorSecondary,
+                ),
               ),
-            ),
-            SizedBox(height: 12),
-            TextField(
-              controller: _noteController,
-              decoration: InputDecoration(
-                labelText: "Escreva uma nota",
-                border: OutlineInputBorder(),
+              const SizedBox(height: 12),
+              if (_message.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: _message.split(':')[0] == 'error'
+                        ? AppColors.errorColor.withAlpha(26)
+                        : AppColors.successColor.withAlpha(26),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: _message.split(':')[0] == 'error'
+                          ? AppColors.errorColor.withAlpha(128)
+                          : AppColors.successColor.withAlpha(128),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _message.split(':')[0] == 'error'
+                            ? Icons.error_outline
+                            : Icons.check_circle_outline,
+                        color: _message.split(':')[0] == 'error'
+                            ? AppColors.errorColor
+                            : AppColors.successColor,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _message.split(':')[1],
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: _message.split(':')[0] == 'error'
+                                ? AppColors.errorColor
+                                : AppColors.successColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 32),
+              TextField(
+                controller: _linkController,
+                style: const TextStyle(color: AppColors.textColor),
+                decoration: InputDecoration(
+                  hintText: "Link da música (Spotify)",
+                  filled: true,
+                  fillColor: AppColors.drawerBackgroundColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.all(16),
+                  prefixIcon: Icon(
+                    Icons.link,
+                    color: AppColors.textColorSecondary,
+                  ),
+                ),
               ),
-            ),
-            SizedBox(height: 24),
-            Row(
-              spacing: 12,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                if (_data != null)
-                  ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(
-                        AppColors.errorColor,
+              const SizedBox(height: 16),
+              TextField(
+                controller: _noteController,
+                style: const TextStyle(color: AppColors.textColor),
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: "Escreva uma nota (opcional)",
+                  filled: true,
+                  fillColor: AppColors.drawerBackgroundColor,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.all(16),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Column(
+                children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColorHover,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      onPressed: () => _submitForm(),
+                      child: const Text(
+                        "Dedicar Música",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                    onPressed: () => _submitForm(delete: true),
-                    child: Text(
-                      "Remover dedicação",
-                      style: TextStyle(color: AppColors.textColor),
-                    ),
                   ),
-                ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: WidgetStateProperty.all(
-                      AppColors.primaryColor,
+                  if (_data != null) ...[
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.errorColorHover,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        onPressed: () => _submitForm(delete: true),
+                        child: const Text(
+                          "Remover dedicação",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  onPressed: () => _submitForm(),
-                  child: Text("Dedicar", style: TextStyle(color: AppColors.textColor)),
-                ),
-              ],
-            ),
-          ],
+                  ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

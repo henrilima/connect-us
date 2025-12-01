@@ -1,7 +1,8 @@
 import 'package:connect/firebase_options.dart';
 import 'package:connect/provider/auth_check_screen.dart';
 import 'package:connect/provider/auth_provider.dart';
-import 'package:connect/theme/app_theme.dart';
+import 'package:connect/services/api_service.dart';
+import 'package:connect/ui/app_theme.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +12,9 @@ import 'package:provider/provider.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  await ApiService.loadServerUrl();
+
   await initializeDateFormatting('pt_BR', null);
   Intl.defaultLocale = 'pt_BR';
 

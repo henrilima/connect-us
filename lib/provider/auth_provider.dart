@@ -12,6 +12,7 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> initializeUser() async {
     _userId = await Storage().getId();
+
     _isInitializing = false;
     notifyListeners();
   }

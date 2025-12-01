@@ -1,9 +1,8 @@
-import 'package:connect/components/appbar.dart';
-import 'package:connect/components/drawer.dart';
+import 'package:connect/components/header.dart';
 import 'package:connect/data/love_language_data.dart';
 import 'package:connect/services/database_service.dart';
-import 'package:connect/theme/app_color.dart';
-import 'package:connect/utils/messenger.dart';
+import 'package:connect/ui/app_color.dart';
+import 'package:connect/services/messenger_service.dart';
 import 'package:flutter/material.dart';
 
 class LoveLanguageQuiz extends StatefulWidget {
@@ -16,11 +15,11 @@ class LoveLanguageQuiz extends StatefulWidget {
 }
 
 class _LoveLanguageQuizState extends State<LoveLanguageQuiz> {
-  List<int> answers = [];
+  List<LoveLanguageOption> answers = [];
   int index = 0;
 
-  void _answerQuestion(int selectedOptionIndex) {
-    answers.add(selectedOptionIndex);
+  void _answerQuestion(LoveLanguageOption option) {
+    answers.add(option);
     if (index < loveQuestions.length - 1) {
       setState(() {
         index++;
@@ -60,7 +59,9 @@ class _LoveLanguageQuizState extends State<LoveLanguageQuiz> {
     }
   }
 
-  Map<String, double> calculatePercentages(List<int> selectedOptionIndices) {
+  Map<String, double> calculatePercentages(
+    List<LoveLanguageOption> selectedOptions,
+  ) {
     final Map<String, int> totals = {
       'palavras_de_afirmacao': 0,
       'tempo_de_qualidade': 0,
@@ -69,24 +70,10 @@ class _LoveLanguageQuizState extends State<LoveLanguageQuiz> {
       'toque_fisico': 0,
     };
 
-    for (var i = 0; i < selectedOptionIndices.length; i++) {
-      if (i >= loveQuestions.length) continue;
-
-      final question = loveQuestions[i];
-      final selectedOptionIndex = selectedOptionIndices[i];
-
-      final options = question['options'] as List<dynamic>;
-
-      if (selectedOptionIndex < 0 || selectedOptionIndex >= options.length) {
-        continue;
-      }
-
-      final scores =
-          options[selectedOptionIndex]['scores'] as Map<String, dynamic>;
-
-      scores.forEach((key, value) {
+    for (final option in selectedOptions) {
+      option.scores.forEach((key, value) {
         if (totals.containsKey(key)) {
-          totals[key] = totals[key]! + (value as int);
+          totals[key] = totals[key]! + value;
         }
       });
     }
@@ -96,61 +83,100 @@ class _LoveLanguageQuizState extends State<LoveLanguageQuiz> {
     if (sum == 0) {
       return totals.map((k, v) => MapEntry(k, 0.0));
     }
-
     return totals.map((k, v) => MapEntry(k, (v * 100) / sum));
   }
 
   @override
   Widget build(BuildContext context) {
     final currentQuestion = loveQuestions[index];
-    final options = currentQuestion['options'] as List<dynamic>;
+    final progress = (index + 1) / loveQuestions.length;
 
     return Scaffold(
-      appBar: AppBarComponent(
-        'Questão ${index + 1} de ${loveQuestions.length}',
-        type: 'back',
-      ),
-      drawer: DrawerComponent(widget.setPage),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                currentQuestion['question'].toString(),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
+        child: Column(
+          children: [
+            CustomHeader(widget.setPage, true, title: 'Quiz de Linguagens'),
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: AppColors.drawerBackgroundColor,
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+              minHeight: 6,
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 24.0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Questão ${index + 1} de ${loveQuestions.length}',
+                      style: TextStyle(
+                        color: AppColors.textColorSecondary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    Text(
+                      currentQuestion.question,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
+                        height: 1.3,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 48),
+                    ...currentQuestion.options.map((option) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: ElevatedButton(
+                          onPressed: () => _answerQuestion(option),
+                          style:
+                              ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    AppColors.drawerBackgroundColor,
+                                foregroundColor: AppColors.textColor,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 20,
+                                  horizontal: 24,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  side: BorderSide(
+                                    color: Colors.transparent,
+                                    width: 1,
+                                  ),
+                                ),
+                              ).copyWith(
+                                overlayColor: WidgetStateProperty.all(
+                                  AppColors.primaryColor.withAlpha(26),
+                                ),
+                              ),
+                          child: Text(
+                            option.text,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              height: 1.4,
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
                 ),
               ),
-              const SizedBox(height: 30),
-
-              ...options.asMap().entries.map((entry) {
-                final optionIndex = entry.key;
-                final optionData = entry.value as Map<String, dynamic>;
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
-                  child: ElevatedButton(
-                    onPressed: () => _answerQuestion(optionIndex),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(
-                      optionData['text'].toString(),
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                );
-              }),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

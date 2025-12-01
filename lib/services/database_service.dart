@@ -1,11 +1,12 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/rendering.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:connect/services/api_service.dart';
 
 class DatabaseService {
   final DatabaseReference databaseReference = FirebaseDatabase.instance.ref();
 
-  /// ? CREATE RELATIONSHIP
+  /// ? CRIAR RELACIONAMENTO
   Future<String> createRelationship(
     String authorId,
     String partnerId,
@@ -21,7 +22,7 @@ class DatabaseService {
     }
 
     String relationshipId = _generateRelationshipId(authorId, partnerId);
-    
+
     await databaseReference.child('relationships/$relationshipId').set({
       'relationshipId': relationshipId,
       'authorId': authorId.toLowerCase(),
@@ -37,6 +38,8 @@ class DatabaseService {
       'partnerId': partnerId.toLowerCase(),
       'username': authorId.toLowerCase(),
       'relationshipId': relationshipId,
+      'status': false,
+      'last-login': '0',
     });
 
     await databaseReference.child('users/${partnerId.toLowerCase()}').set({
@@ -44,12 +47,14 @@ class DatabaseService {
       'partnerId': authorId.toLowerCase(),
       'username': partnerId.toLowerCase(),
       'relationshipId': relationshipId,
+      'status': false,
+      'last-login': '0',
     });
 
     return 'id:$relationshipId';
   }
 
-  /// ? Delete User
+  /// ? Deletar Usuário
   Future<bool> deleteUser(String userId) async {
     try {
       await databaseReference.child('users/$userId').remove();
@@ -60,7 +65,7 @@ class DatabaseService {
     }
   }
 
-  /// ? Update User
+  /// ? Atualizar Usuário
   Future<bool> updateUser(String userId, Map<String, dynamic> userData) async {
     try {
       await databaseReference.child('users/$userId').update(userData);
@@ -71,7 +76,18 @@ class DatabaseService {
     }
   }
 
-  /// ? Validations
+  /// ? Definir Token de Mensagem do Usuário
+  Future<bool> setUserMessagerToken(String userId, String token) async {
+    try {
+      await databaseReference.child('users/$userId/messager-token').set(token);
+      return true;
+    } catch (e) {
+      debugPrint(e.toString());
+      return false;
+    }
+  }
+
+  /// ? Validações
   Future<bool> userExists(String userId) async {
     var snapshot = await databaseReference.child('users/$userId').get();
     return snapshot.exists;
@@ -84,25 +100,13 @@ class DatabaseService {
     return snapshot.exists;
   }
 
-  /// ? Get User and Relationship Data
+  /// ? Obter Dados do Usuário e Relacionamento
   Future<Map<String, dynamic>> getUserData(String userId) async {
     var snapshot = await databaseReference.child('users/$userId').get();
     if (!snapshot.exists) return <String, dynamic>{};
 
     final rawUser = snapshot.value as Map<dynamic, dynamic>;
     final userData = Map<String, dynamic>.from(rawUser);
-
-    final partnerIdRaw = userData['partnerId'];
-
-    if (partnerIdRaw is String && partnerIdRaw.isNotEmpty) {
-      final partnerSnapshot = await databaseReference
-          .child('users/${partnerIdRaw.toLowerCase()}')
-          .get();
-      if (partnerSnapshot.exists && partnerSnapshot.value != null) {
-        final rawPartner = partnerSnapshot.value as Map<dynamic, dynamic>;
-        userData['partnerData'] = Map<String, dynamic>.from(rawPartner);
-      }
-    }
 
     return userData;
   }
@@ -129,6 +133,7 @@ class DatabaseService {
     required String countName,
     bool increment = true,
     bool custom = false,
+    String? partnerId,
   }) async {
     int op = increment ? 1 : -1;
     var relationshipRef = databaseReference.child(
@@ -162,6 +167,51 @@ class DatabaseService {
       await databaseReference
           .child('relationships/$relationshipId/counters/${countName}Time')
           .set(DateTime.now().toIso8601String());
+
+      if (increment && partnerId != null) {
+        final newValue = currentValue + 1;
+        if (countName == 'kissCount') {
+          if (newValue == 100) {
+            _notifyAchievement(partnerId, 'Carinhosos', '100 beijos trocados!');
+          }
+          if (newValue == 500) {
+            _notifyAchievement(
+              partnerId,
+              'Viciado em Beijos',
+              '500 beijos trocados!',
+            );
+          }
+          if (newValue == 1000) {
+            _notifyAchievement(
+              partnerId,
+              'Mestre dos Beijos',
+              '1000 beijos trocados!',
+            );
+          }
+        } else if (countName == 'hugCount') {
+          if (newValue == 100) {
+            _notifyAchievement(
+              partnerId,
+              'Carinhosos',
+              '100 abraços trocados!',
+            );
+          }
+          if (newValue == 500) {
+            _notifyAchievement(
+              partnerId,
+              'Abraço de Urso',
+              '500 abraços trocados!',
+            );
+          }
+          if (newValue == 1000) {
+            _notifyAchievement(
+              partnerId,
+              'Mestre dos Abraços',
+              '1000 abraços trocados!',
+            );
+          }
+        }
+      }
     }
   }
 
@@ -209,6 +259,7 @@ class DatabaseService {
     required DateTime date,
     bool update = false,
     String? eventkey,
+    String? partnerId,
   }) async {
     final relationshipTimelineRef = databaseReference.child(
       'relationships/$relationshipId/timeline',
@@ -226,6 +277,41 @@ class DatabaseService {
       }
     } else {
       await relationshipTimelineRef.push().update(data);
+
+      if (partnerId != null) {
+        final snapshot = await relationshipTimelineRef.get();
+        if (snapshot.exists) {
+          final count = snapshot.children.length;
+          if (count == 1) {
+            _notifyAchievement(
+              partnerId,
+              'Primeira Memória',
+              'Primeiro evento registrado!',
+            );
+          }
+          if (count == 20) {
+            _notifyAchievement(
+              partnerId,
+              'Diário de Bordo',
+              '20 memórias registradas!',
+            );
+          }
+          if (count == 50) {
+            _notifyAchievement(
+              partnerId,
+              'Historiador',
+              '50 momentos inesquecíveis!',
+            );
+          }
+          if (count == 100) {
+            _notifyAchievement(
+              partnerId,
+              'Livro Lendário',
+              '100 memórias! Uma vida juntos.',
+            );
+          }
+        }
+      }
     }
   }
 
@@ -252,7 +338,27 @@ class DatabaseService {
           'author': author,
           'message': message,
           'date': DateTime.now().toIso8601String(),
+          'isDeleted': false,
         });
+  }
+
+  Future<void> updateMessage({
+    required String relationshipId,
+    required String messageId,
+    required String newMessage,
+  }) async {
+    await databaseReference
+        .child('relationships/$relationshipId/chat-messages/$messageId')
+        .update({'message': newMessage});
+  }
+
+  Future<void> deleteMessage({
+    required String relationshipId,
+    required String messageId,
+  }) async {
+    await databaseReference
+        .child('relationships/$relationshipId/chat-messages/$messageId')
+        .update({'message': 'Mensagem apagada', 'isDeleted': true});
   }
 
   Future<void> setUserLoveLanguage(
@@ -302,8 +408,6 @@ class DatabaseService {
   }
 
   /// ? Future com retorno
-  /// Aqui ficam as funções Future com retorno
-
   Future<Map<String, dynamic>> getEventFromTimeline(
     String relationshipId,
     String? eventKey,
@@ -317,6 +421,20 @@ class DatabaseService {
     if (!snapshot.exists || snapshot.value == null) return <String, dynamic>{};
 
     return Map<String, dynamic>.from(snapshot.value as Map);
+  }
+
+  Future<void> updateUserFeeling(
+    String userId,
+    String feeling,
+    int iconCodePoint,
+    int colorValue,
+  ) async {
+    await databaseReference.child('users/$userId/feeling').set({
+      'label': feeling,
+      'icon': iconCodePoint,
+      'color': colorValue,
+      'updatedAt': DateTime.now().toIso8601String(),
+    });
   }
 
   Future<void> updateLocation(String userId, Position position) async {
@@ -418,7 +536,6 @@ class DatabaseService {
   }
 
   /// ? Streams
-  /// Aqui ficam os Streams
   Stream<Map<String, dynamic>> getCountsStream(String relationshipId) {
     final relationshipNodeRef = databaseReference.child(
       'relationships/$relationshipId/counters',
@@ -453,10 +570,14 @@ class DatabaseService {
     });
   }
 
-  Stream<Map<String, dynamic>> getMessagesStream(String relationshipId) {
-    final relationshipNodeRef = databaseReference.child(
-      'relationships/$relationshipId/chat-messages',
-    );
+  Stream<Map<String, dynamic>> getMessagesStream(
+    String relationshipId, {
+    int limit = 10,
+  }) {
+    final relationshipNodeRef = databaseReference
+        .child('relationships/$relationshipId/chat-messages')
+        .orderByKey()
+        .limitToLast(limit);
 
     return relationshipNodeRef.onValue.map((event) {
       final dataSnapshot = event.snapshot;
@@ -519,7 +640,286 @@ class DatabaseService {
     });
   }
 
-  /// ? Generations, Sorts and Maps
+  Stream<Map<String, dynamic>> getPartnerStream(String partnerId) {
+    final userNodeRef = databaseReference.child('users/$partnerId');
+
+    return userNodeRef.onValue.map((event) {
+      final snapshot = event.snapshot;
+
+      if (snapshot.exists && snapshot.value != null) {
+        final data = Map<String, dynamic>.from(snapshot.value as Map);
+        return data;
+      }
+
+      return <String, dynamic>{};
+    });
+  }
+
+  Future<void> updateUserStatus(String userId, bool isOnline) async {
+    await databaseReference.child('users/$userId').update({
+      'status': isOnline,
+      'last-login': DateTime.now().toIso8601String(),
+    });
+  }
+
+  /// ? Enviar Amor
+  Future<void> sendLove(
+    String relationshipId,
+    String senderId,
+    String partnerId,
+  ) async {
+    // Atualizar timestamp para o remetente
+    await databaseReference
+        .child('relationships/$relationshipId/love_pings/$senderId')
+        .set(DateTime.now().toIso8601String());
+
+    // Enviar notificação
+    final partnerToken = await getMessagerToken(partnerId);
+    if (partnerToken != null) {
+      await ApiService().sendNotification(
+        partnerToken,
+        'Amor recebido!',
+        'Seu amor está pensando em você. ❤️',
+      );
+    }
+  }
+
+  Stream<Map<String, String>> getLovePingsStream(String relationshipId) {
+    return databaseReference
+        .child('relationships/$relationshipId/love_pings')
+        .onValue
+        .map((event) {
+          if (event.snapshot.value == null) {
+            return {};
+          }
+          final data = Map<String, dynamic>.from(event.snapshot.value as Map);
+          return data.map((key, value) => MapEntry(key, value.toString()));
+        });
+  }
+
+  /// ? Fotos Diárias
+  Stream<Map<String, dynamic>> getDailyPhotosStream(String relationshipId) {
+    return databaseReference
+        .child('relationships/$relationshipId/photos')
+        .onValue
+        .map((event) {
+          if (event.snapshot.value == null) {
+            return {};
+          }
+          return Map<String, dynamic>.from(event.snapshot.value as Map);
+        });
+  }
+
+  Future<void> updateDailyPhotoData(
+    String relationshipId,
+    String userId, {
+    String? caption,
+    String? partnerId,
+  }) async {
+    final Map<String, dynamic> updates = {
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+    if (caption != null) {
+      updates['caption'] = caption;
+    }
+    await databaseReference
+        .child('relationships/$relationshipId/photos/$userId')
+        .update(updates);
+
+    if (partnerId != null) {
+      final partnerToken = await getMessagerToken(partnerId);
+      if (partnerToken != null) {
+        await ApiService().sendNotification(
+          partnerToken,
+          'Novo registro único! 📸',
+          'Seu amor acabou de postar uma foto do dia. Corra para ver, pois ela não fica salva.',
+        );
+      }
+    }
+  }
+
+  Future<void> deleteDailyPhoto(String relationshipId, String userId) async {
+    await databaseReference
+        .child('relationships/$relationshipId/photos/$userId')
+        .remove();
+  }
+
+  /// ? Surpresas
+  Future<String?> getMessagerToken(String userId) async {
+    final snapshot = await databaseReference
+        .child('users/$userId/messager-token')
+        .get();
+    if (snapshot.exists) {
+      return snapshot.value as String?;
+    }
+    return null;
+  }
+
+  Future<void> createSurprise(
+    String relationshipId,
+    Map<String, dynamic> surpriseData,
+  ) async {
+    // Buscar tokens
+    final senderUid = surpriseData['senderUid'];
+    final receiverUid = surpriseData['receiverUid'];
+
+    final senderToken = await getMessagerToken(senderUid);
+    final receiverToken = await getMessagerToken(receiverUid);
+
+    // Atualizar dados com tokens
+    surpriseData['senderId'] = senderToken;
+    surpriseData['receiverId'] = receiverToken;
+
+    final newSurpriseRef = databaseReference
+        .child('relationships/$relationshipId/surprises')
+        .push();
+
+    // Adicionar o ID aos dados
+    surpriseData['id'] = newSurpriseRef.key;
+
+    await newSurpriseRef.set(surpriseData);
+  }
+
+  Future<void> updateSurprise(
+    String relationshipId,
+    String surpriseId,
+    Map<String, dynamic> updates,
+  ) async {
+    await databaseReference
+        .child('relationships/$relationshipId/surprises/$surpriseId')
+        .update(updates);
+  }
+
+  Future<void> deleteSurprise(String relationshipId, String surpriseId) async {
+    await databaseReference
+        .child('relationships/$relationshipId/surprises/$surpriseId')
+        .remove();
+  }
+
+  Stream<Map<String, dynamic>> getSurprisesStream(String relationshipId) {
+    return databaseReference
+        .child('relationships/$relationshipId/surprises')
+        .onValue
+        .map((event) {
+          if (event.snapshot.value == null) {
+            return {};
+          }
+          return Map<String, dynamic>.from(event.snapshot.value as Map);
+        });
+  }
+
+  Future<void> markSurpriseAsRead(
+    String relationshipId,
+    String surpriseId,
+  ) async {
+    await databaseReference
+        .child('relationships/$relationshipId/surprises/$surpriseId')
+        .update({'isRead': true});
+  }
+
+  /// ? Gerações, Ordenações e Mapas
+  /// ? Jogo Pedra Papel Tesoura
+  Future<void> updateRPSSelection(
+    String relationshipId,
+    String userId,
+    String selection,
+  ) async {
+    await databaseReference
+        .child('relationships/$relationshipId/rps/$userId')
+        .update({'selection': selection, 'confirmed': false});
+  }
+
+  Future<void> confirmRPSSelection(String relationshipId, String userId) async {
+    await databaseReference
+        .child('relationships/$relationshipId/rps/$userId')
+        .update({'confirmed': true});
+  }
+
+  Future<void> updateRPSScores(
+    String relationshipId,
+    String winnerId, {
+    String? partnerId,
+  }) async {
+    await databaseReference
+        .child('relationships/$relationshipId/rps/scores/$winnerId')
+        .set(ServerValue.increment(1));
+
+    if (partnerId != null) {
+      final snapshot = await databaseReference
+          .child('relationships/$relationshipId/rps/scores/$winnerId')
+          .get();
+      if (snapshot.exists) {
+        final score = snapshot.value as int;
+        if (score == 1) {
+          _notifyAchievement(
+            partnerId,
+            'Sorte de Principiante',
+            'Venceu a primeira partida!',
+          );
+        }
+        if (score == 10) {
+          _notifyAchievement(
+            partnerId,
+            'Competitivo',
+            'Venceu 10 partidas de PPT!',
+          );
+        }
+        if (score == 50) {
+          _notifyAchievement(
+            partnerId,
+            'Mestre do Jokenpô',
+            'Venceu 50 partidas!',
+          );
+        }
+        if (score == 100) {
+          _notifyAchievement(
+            partnerId,
+            'Lenda do Jokenpô',
+            '100 vitórias! Incrível!',
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> resetRPSRound(String relationshipId) async {
+    await databaseReference
+        .child('relationships/$relationshipId/rps')
+        .update({});
+    final snapshot = await databaseReference
+        .child('relationships/$relationshipId/rps')
+        .get();
+    if (snapshot.exists) {
+      final data = snapshot.value as Map;
+      data.forEach((key, value) {
+        if (key != 'scores') {
+          databaseReference
+              .child('relationships/$relationshipId/rps/$key')
+              .update({'selection': '', 'confirmed': false});
+        }
+      });
+    }
+  }
+
+  Future<void> resetRPSScores(String relationshipId) async {
+    await databaseReference
+        .child('relationships/$relationshipId/rps/scores')
+        .remove();
+  }
+
+  Stream<Map<String, dynamic>> getRPSStream(String relationshipId) {
+    return databaseReference
+        .child('relationships/$relationshipId/rps')
+        .onValue
+        .map((event) {
+          final snapshot = event.snapshot;
+          if (snapshot.exists && snapshot.value != null) {
+            return Map<String, dynamic>.from(snapshot.value as Map);
+          }
+          return <String, dynamic>{};
+        });
+  }
+
   String _generateRelationshipId(String authorId, String partnerId) {
     final prefix = 'rel-';
     final a = (authorId.hashCode).abs() % 10000;
@@ -535,5 +935,76 @@ class DatabaseService {
         return aDate.compareTo(bDate);
       });
     return Map.fromEntries(entries);
+  }
+
+  /// ? Momentos
+  Future<void> createMoment(
+    String relationshipId,
+    Map<String, dynamic> momentData,
+  ) async {
+    final newMomentRef = databaseReference
+        .child('relationships/$relationshipId/moments')
+        .push();
+
+    momentData['id'] = newMomentRef.key;
+    momentData['createdAt'] = DateTime.now().toIso8601String();
+    momentData['isCompleted'] = false;
+
+    await newMomentRef.set(momentData);
+  }
+
+  Future<void> updateMoment(
+    String relationshipId,
+    String momentId,
+    Map<String, dynamic> updates,
+  ) async {
+    await databaseReference
+        .child('relationships/$relationshipId/moments/$momentId')
+        .update(updates);
+  }
+
+  Future<void> deleteMoment(String relationshipId, String momentId) async {
+    await databaseReference
+        .child('relationships/$relationshipId/moments/$momentId')
+        .remove();
+  }
+
+  Future<void> markMomentAsCompleted(
+    String relationshipId,
+    String momentId,
+  ) async {
+    await databaseReference
+        .child('relationships/$relationshipId/moments/$momentId')
+        .update({
+          'isCompleted': true,
+          'completedAt': DateTime.now().toIso8601String(),
+        });
+  }
+
+  Stream<Map<String, dynamic>> getMomentsStream(String relationshipId) {
+    return databaseReference
+        .child('relationships/$relationshipId/moments')
+        .onValue
+        .map((event) {
+          if (event.snapshot.value == null) {
+            return {};
+          }
+          return Map<String, dynamic>.from(event.snapshot.value as Map);
+        });
+  }
+
+  Future<void> _notifyAchievement(
+    String partnerId,
+    String title,
+    String body,
+  ) async {
+    final token = await getMessagerToken(partnerId);
+    if (token != null) {
+      await ApiService().sendNotification(
+        token,
+        "Conquista Desbloqueada! 🏆",
+        "$title: $body",
+      );
+    }
   }
 }

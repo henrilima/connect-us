@@ -1,6 +1,7 @@
 import 'package:connect/provider/auth_provider.dart';
 import 'package:connect/screens/screens_manager.dart';
 import 'package:connect/screens/login_screen.dart';
+import 'package:connect/services/messaging_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -29,6 +30,11 @@ class _AuthCheckScreenState extends State<AuthCheckScreen> {
     }
 
     if (authProvider.isAuthenticated) {
+      final userId = Provider.of<AuthProvider>(context, listen: false).userId;
+      if (userId != null) {
+        MessagingService().init(userId);
+      }
+
       return const ScreensManager();
     } else {
       return const LoginScreen();

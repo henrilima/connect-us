@@ -1,5 +1,5 @@
 import 'package:connect/services/database_service.dart';
-import 'package:connect/theme/app_color.dart';
+import 'package:connect/ui/app_color.dart';
 import 'package:connect/utils/dialoguer.dart';
 import 'package:connect/utils/icon.dart';
 import 'package:flutter/material.dart';
@@ -64,150 +64,216 @@ class _CounterFormState extends State<CounterForm> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: Card(
-        color: AppColors.backgroundColor,
-        elevation: 5,
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${widget.edit ? 'Editar' : 'Adicionar'} Contador',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primaryColorHover,
+    return SingleChildScrollView(
+      padding: EdgeInsets.only(bottom: 24, left: 24, right: 24, top: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '${widget.edit ? 'Editar' : 'Adicionar'} Contador',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textColor,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            widget.edit
+                ? "Edite seu contador. Você pode alterar todas as informações dele."
+                : "Adicione um contador personalizado na sua lista de contadores e comece a registrar algo novo.",
+            style: TextStyle(fontSize: 14, color: AppColors.textColorSecondary),
+          ),
+          const SizedBox(height: 12),
+          if (_message.isNotEmpty)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _message.split(':')[0] == 'error'
+                    ? AppColors.errorColor.withAlpha(26)
+                    : AppColors.successColor.withAlpha(26),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _message.split(':')[0] == 'error'
+                      ? AppColors.errorColor.withAlpha(128)
+                      : AppColors.successColor.withAlpha(128),
                 ),
               ),
-              Text(
-                widget.edit
-                    ? "Edite seu contador. Você pode alterar todas as informações dele."
-                    : "Adicione um contador personalizado na sua lista de contadores e comece a registrar algo novo.",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-              if (_message.isNotEmpty) SizedBox(height: 12),
-              if (_message.isNotEmpty)
-                Text(
-                  _message.split(':')[1],
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+              child: Row(
+                children: [
+                  Icon(
+                    _message.split(':')[0] == 'error'
+                        ? Icons.error_outline
+                        : Icons.check_circle_outline,
                     color: _message.split(':')[0] == 'error'
                         ? AppColors.errorColor
                         : AppColors.successColor,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _message.split(':')[1],
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: _message.split(':')[0] == 'error'
+                            ? AppColors.errorColor
+                            : AppColors.successColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 32),
+          TextField(
+            controller: _titleController,
+            style: const TextStyle(color: AppColors.textColor),
+            decoration: InputDecoration(
+              hintText: 'O que será contado?',
+              filled: true,
+              fillColor: AppColors.drawerBackgroundColor,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.all(16),
+            ),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _descriptionController,
+            style: const TextStyle(color: AppColors.textColor),
+            decoration: InputDecoration(
+              hintText: 'Descrição do contador',
+              filled: true,
+              fillColor: AppColors.drawerBackgroundColor,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.all(16),
+            ),
+          ),
+          const SizedBox(height: 24),
+          InkWell(
+            onTap: () async {
+              await Dialoguer.showConfirmAlert(
+                context: context,
+                titleWidget: Text(
+                  "Selecione o ícone",
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: AppColors.primaryColorHover,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              SizedBox(height: 32),
-              TextField(
-                controller: _titleController,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'O que será contado?',
+                contentWidget: SizedBox(
+                  height: 320,
+                  child: Column(
+                    children: [
+                      Text(
+                        'Você pode dar scroll e selecionar um dos diversos ícones disponíveis',
+                        style: TextStyle(color: AppColors.textColorSecondary),
+                      ),
+                      SizedBox(height: 22),
+                      Container(
+                        height: 258,
+                        width: 300,
+                        decoration: BoxDecoration(
+                          color: AppColors.drawerBackgroundColor,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: SingleChildScrollView(
+                          child: IconPicker(onSelected: _setIcon),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
+                actionsWidget: [],
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.drawerBackgroundColor,
+                borderRadius: BorderRadius.circular(16),
               ),
-              SizedBox(height: 12),
-              TextField(
-                controller: _descriptionController,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Descrição do contador',
-                ),
-              ),
-              SizedBox(height: 24),
-              Row(
+              child: Row(
                 children: [
                   Text(
                     'Ícone',
                     style: TextStyle(
-                      fontSize: 20,
-                      color: AppColors.primaryColorHover,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                      color: AppColors.textColor,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   Spacer(),
-                  IconButton(
-                    onPressed: () async {
-                      await Dialoguer.showConfirmAlert(
-                        context: context,
-                        titleWidget: Text(
-                          "Selecione o ícone",
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: AppColors.primaryColorHover,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        contentWidget: SizedBox(
-                          height: 320,
-                          child: Column(
-                            children: [
-                              Text(
-                                'Você pode dar scroll e selecionar um dos diversos ícones disponíveis',
-                              ),
-                              SizedBox(height: 22),
-                              Container(
-                                height: 258,
-                                width: 300,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadiusGeometry.circular(
-                                    8,
-                                  ),
-                                  border: BoxBorder.all(
-                                    color: AppColors.drawerBackgroundColor,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: SingleChildScrollView(
-                                  child: IconPicker(onSelected: _setIcon),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        actionsWidget: [],
-                      );
-                    },
-                    icon: FaIcon(IconHelper.getIcon(_iconName), size: 28),
+                  FaIcon(
+                    IconHelper.getIcon(_iconName),
+                    size: 24,
+                    color: AppColors.primaryColorHover,
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.chevron_right,
+                    color: AppColors.textColorSecondary,
                   ),
                 ],
               ),
-              SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (_titleController.text.isEmpty ||
-                        _descriptionController.text.isEmpty) {
-                      _showMessage(
-                        message:
-                            "error:Os campos não podem estar vazios, insira todos os dados corretamente.",
-                      );
-                    }
+            ),
+          ),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColorHover,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () async {
+                if (_titleController.text.isEmpty ||
+                    _descriptionController.text.isEmpty) {
+                  _showMessage(
+                    message:
+                        "error:Os campos não podem estar vazios, insira todos os dados corretamente.",
+                  );
+                  return;
+                }
 
-                    _showMessage(clear: true);
+                _showMessage(clear: true);
 
-                    await DatabaseService().setCounter(
-                      widget.relationshipId,
-                      title: _titleController.text,
-                      description: _descriptionController.text,
-                      icon: _iconName,
-                      update: widget.edit,
-                      counterKey: widget.counterKey,
-                    );
-                    if (!context.mounted) return;
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(
-                    "${widget.edit ? 'Editar' : 'Adicionar'} Contador",
-                  ),
+                await DatabaseService().setCounter(
+                  widget.relationshipId,
+                  title: _titleController.text,
+                  description: _descriptionController.text,
+                  icon: _iconName,
+                  update: widget.edit,
+                  counterKey: widget.counterKey,
+                );
+                if (!context.mounted) return;
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                "${widget.edit ? 'Editar' : 'Adicionar'} Contador",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

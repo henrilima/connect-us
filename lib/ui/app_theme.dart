@@ -1,4 +1,4 @@
-import 'package:connect/theme/app_color.dart';
+import 'package:connect/ui/app_color.dart';
 import 'package:flutter/material.dart';
 
 abstract class AppTheme {

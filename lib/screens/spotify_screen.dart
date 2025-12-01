@@ -1,14 +1,16 @@
-import 'package:connect/components/appbar.dart';
-import 'package:connect/components/drawer.dart';
+import 'package:connect/components/header.dart';
 import 'package:connect/forms/spotify_form.dart';
 import 'package:connect/services/database_service.dart';
 import 'package:connect/services/spotify_service.dart';
-import 'package:connect/theme/app_color.dart';
+import 'package:connect/ui/app_color.dart';
 import 'package:connect/utils/dialoguer.dart';
-import 'package:connect/utils/messenger.dart';
+import 'package:connect/services/messenger_service.dart';
+import 'package:connect/widgets/fade_in.dart';
+import 'package:connect/widgets/loading_widget.dart';
 import 'package:connect/widgets/spotify_card.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:connect/services/api_service.dart';
 
 class SpotifyScreen extends StatefulWidget {
   final Function setPage;
@@ -26,9 +28,11 @@ class _SpotifyScreenState extends State<SpotifyScreen> {
   Future<void> _fetchTrackData(String url) async {
     final data = await SpotifyService().getTrackDataFromUrl(url);
 
-    setState(() {
-      _trackData = data;
-    });
+    if (mounted) {
+      setState(() {
+        _trackData = data;
+      });
+    }
   }
 
   _openSpotifyFormModal(BuildContext context) {
@@ -49,49 +53,43 @@ class _SpotifyScreenState extends State<SpotifyScreen> {
             .getTrackDataFromUrl(partnerMusic['url']!);
 
         if (!context.mounted) return;
-        Dialoguer.showCustomAlert(
+
+        if (!context.mounted) return;
+        Dialoguer.openModalBottomSheet(
           context: context,
-          titleWidget: Text(
-            'A música que você dedicou foi:',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: AppColors.primaryColorHover,
+          customLayout: true,
+          form: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.backgroundColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
             ),
-          ),
-          contentWidget: SizedBox(
-            height: 160,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(height: 24),
-                Text(
-                  '${spotifyPartnerData!['name']}${spotifyPartnerData['explicit'] ? ' 🅴' : ''}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20,
-                    color: AppColors.textColor,
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        "Por: ${spotifyPartnerData['artists'] != null && (spotifyPartnerData['artists'] as List).isNotEmpty ? (spotifyPartnerData['artists'] as List).map((a) => a['name']).join(', ') : 'Artista desconhecido'}",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: AppColors.textColor,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 24),
+                Text(
+                  'A música que você dedicou',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.secondaryColorHover,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SpotifyCard(
+                  trackData: spotifyPartnerData!,
+                  note: partnerMusic['note'],
                 ),
               ],
             ),
@@ -115,6 +113,20 @@ class _SpotifyScreenState extends State<SpotifyScreen> {
       delete: delete,
     );
 
+    if (!delete) {
+      final partnerId = widget.userData['partnerId'];
+      final token = await DatabaseService().getMessagerToken(partnerId);
+
+      if (token != null) {
+        final myName = widget.userData['username'] ?? 'Seu amor';
+        await ApiService().sendNotification(
+          token,
+          "Nova música dedicada! 🎵",
+          "$myName dedicou uma música para você. Toque para ouvir!",
+        );
+      }
+    }
+
     if (!mounted) return;
     Navigator.of(context).pop();
   }
@@ -137,12 +149,7 @@ class _SpotifyScreenState extends State<SpotifyScreen> {
       stream: DatabaseService().streamPartnerMusic(widget.userData['userId']),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return SpotifyContentScreen(
-            openMusicModal: _openMusicAlert,
-            openSpotifyFormModal: _openSpotifyFormModal,
-            setPage: widget.setPage,
-            bodyWidget: Center(child: CircularProgressIndicator()),
-          );
+          return const Loading();
         }
 
         final data = snapshot.data;
@@ -155,7 +162,7 @@ class _SpotifyScreenState extends State<SpotifyScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: const [
                 Text(
-                  "Parece que seu par ainda não dedicou uma música para você (ou inseriu um link inválido). Dedique um som clicando no ícone de link.",
+                  "Parece que seu par ainda não dedicou uma música para você, ou o link precisa ser ajustado. Que tal dar o primeiro passo e dedicar um som especial? Clique no ícone de link!",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
@@ -167,6 +174,7 @@ class _SpotifyScreenState extends State<SpotifyScreen> {
             openMusicModal: _openMusicAlert,
             openSpotifyFormModal: _openSpotifyFormModal,
             setPage: widget.setPage,
+            photoUrl: widget.userData['photoUrl'],
             bodyWidget: bodyWidget,
           );
         }
@@ -179,18 +187,14 @@ class _SpotifyScreenState extends State<SpotifyScreen> {
         }
 
         if (_trackData == null) {
-          return SpotifyContentScreen(
-            openSpotifyFormModal: _openSpotifyFormModal,
-            openMusicModal: _openMusicAlert,
-            setPage: widget.setPage,
-            bodyWidget: Center(child: CircularProgressIndicator()),
-          );
+          return const Loading();
         }
 
         return SpotifyContentScreen(
           note: data['note'],
           setPage: widget.setPage,
           trackData: _trackData,
+          photoUrl: widget.userData['photoUrl'],
           openSpotifyFormModal: _openSpotifyFormModal,
           openMusicModal: _openMusicAlert,
         );
@@ -204,6 +208,7 @@ class SpotifyContentScreen extends StatelessWidget {
   final Function(BuildContext) openMusicModal;
   final Function setPage;
   final Widget? bodyWidget;
+  final String? photoUrl;
 
   final Map<String, dynamic>? trackData;
   final String? note;
@@ -215,6 +220,7 @@ class SpotifyContentScreen extends StatelessWidget {
     this.trackData,
     this.note,
     this.bodyWidget,
+    this.photoUrl,
     super.key,
   });
 
@@ -222,75 +228,37 @@ class SpotifyContentScreen extends StatelessWidget {
     if (bodyWidget != null) {
       return bodyWidget!;
     } else {
-      return Center(child: HasMusic(trackData!, note: note));
+      return Center(
+        child: FadeIn(
+          child: SpotifyCard(trackData: trackData!, note: note),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBarComponent(
-        'Música Dedicada',
-        actions: [
-          IconButton(
-            onPressed: () => openMusicModal(context),
-            icon: const FaIcon(FontAwesomeIcons.spotify, size: 20),
-          ),
-          IconButton(
-            onPressed: () => openSpotifyFormModal(context),
-            icon: const FaIcon(FontAwesomeIcons.link, size: 20),
-          ),
-        ],
-      ),
-      drawer: DrawerComponent(setPage),
-      body: body,
-    );
-  }
-}
-
-class HasMusic extends StatelessWidget {
-  final Map<String, dynamic> _trackData;
-  final String? note;
-  const HasMusic(this._trackData, {this.note, super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SpotifyCard(_trackData),
-            const SizedBox(height: 24),
-
-            if (note != null && note!.isNotEmpty)
-              Column(
-                children: [
-                  const Text(
-                    "O seu par deixou uma mensagem junto com a música:",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: AppColors.textColorSecondary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    '"${note!}"',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: AppColors.textColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              )
-            else
-              const SizedBox.shrink(),
+            CustomHeader(
+              setPage,
+              true,
+              title: 'Música Dedicada',
+              photoUrl: photoUrl,
+              actions: [
+                IconButton(
+                  onPressed: () => openMusicModal(context),
+                  icon: const FaIcon(FontAwesomeIcons.spotify, size: 20),
+                ),
+                IconButton(
+                  onPressed: () => openSpotifyFormModal(context),
+                  icon: const FaIcon(FontAwesomeIcons.link, size: 20),
+                ),
+              ],
+            ),
+            Expanded(child: body),
           ],
         ),
       ),

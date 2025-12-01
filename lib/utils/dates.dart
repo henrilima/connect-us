@@ -3,52 +3,44 @@
 /// [now] Momento atual (Ou outro momento para comparar).
 /// [relationshipDate] Data do início do relacionamento.
 /// ? Retorna um Map com a diferença em dias, horas, minutos e segundos.
-Map<String, int> getDifferenceDate(DateTime relationshipDate, {DateTime? now}) {
-  final actualNow = now ?? DateTime.now();
+Map<String, int> getPreciseDifference(DateTime start, {DateTime? now}) {
+  final current = now ?? DateTime.now();
 
-  final isNegative = actualNow.isBefore(relationshipDate);
-  final earlier = isNegative ? actualNow : relationshipDate;
-  final later = isNegative ? relationshipDate : actualNow;
+  int totalMonths =
+      (current.year - start.year) * 12 + (current.month - start.month);
 
-  int years = later.year - earlier.year;
-  int months = later.month - earlier.month;
-  int days = later.day - earlier.day;
-  int hours = later.hour - earlier.hour;
-  int minutes = later.minute - earlier.minute;
-  int seconds = later.second - earlier.second;
+  DateTime baseDate = DateTime(
+    start.year,
+    start.month + totalMonths,
+    start.day,
+    start.hour,
+    start.minute,
+    start.second,
+  );
 
-  if (seconds < 0) {
-    seconds += 60;
-    minutes--;
-  }
-  if (minutes < 0) {
-    minutes += 60;
-    hours--;
-  }
-  if (hours < 0) {
-    hours += 24;
-    days--;
-  }
-  if (days < 0) {
-    final daysInPrevMonth = DateTime(later.year, later.month, 0).day;
-    days += daysInPrevMonth;
-    months--;
-  }
-  if (months < 0) {
-    months += 12;
-    years--;
+  if (current.isBefore(baseDate)) {
+    totalMonths--;
+    baseDate = DateTime(
+      start.year,
+      start.month + totalMonths,
+      start.day,
+      start.hour,
+      start.minute,
+      start.second,
+    );
   }
 
-  if (isNegative) {
-    years = -years;
-    months = -months;
-    days = -days;
-    hours = -hours;
-    minutes = -minutes;
-    seconds = -seconds;
-  }
+  int years = totalMonths ~/ 12;
+  int months = totalMonths % 12;
 
-  return <String, int>{
+  Duration diff = current.difference(baseDate);
+
+  int days = diff.inDays;
+  int hours = diff.inHours % 24;
+  int minutes = diff.inMinutes % 60;
+  int seconds = diff.inSeconds % 60;
+
+  return {
     'years': years,
     'months': months,
     'days': days,
@@ -56,4 +48,9 @@ Map<String, int> getDifferenceDate(DateTime relationshipDate, {DateTime? now}) {
     'minutes': minutes,
     'seconds': seconds,
   };
+}
+
+int getDateInDays(DateTime start) {
+  int totalDays = DateTime.now().difference(start).inDays;
+  return totalDays;
 }

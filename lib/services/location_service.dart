@@ -1,4 +1,4 @@
-import 'package:connect/utils/messenger.dart';
+import 'package:connect/services/messenger_service.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 

@@ -1,6 +1,6 @@
 import 'package:connect/forms/counter_form.dart';
 import 'package:connect/services/database_service.dart';
-import 'package:connect/theme/app_color.dart';
+import 'package:connect/ui/app_color.dart';
 import 'package:connect/utils/dialoguer.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';

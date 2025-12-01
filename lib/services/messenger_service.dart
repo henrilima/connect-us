@@ -1,4 +1,4 @@
-import 'package:connect/theme/app_color.dart';
+import 'package:connect/ui/app_color.dart';
 import 'package:flutter/material.dart';
 
 /// Classe responsável por gerenciar todas os tipos de avisos da aplicação, sejam eles erros, mensagens de sucesso, alertas, informações e outros.
